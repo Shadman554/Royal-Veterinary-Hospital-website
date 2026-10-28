@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Royal Veterinary Hospital"
+description = "A bilingual English and Sorani Kurdish website for Royal Veterinary Hospital in Sulaymaniyah, with service information, clinician profiles, wellness plans, facilities, contact details, and appointment requests."
+version = "1.0.0"
+id = "artifacts/royal-veterinary-hospital"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18432
+
+[services.development]
+run = "pnpm --filter @workspace/royal-veterinary-hospital run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/royal-veterinary-hospital", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/royal-veterinary-hospital/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18432"
+BASE_PATH = "/"

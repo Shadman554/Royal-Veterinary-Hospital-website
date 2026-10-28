@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#149554">
+  <meta name="description" content="Book an appointment with specialist veterinary surgeons and clinicians at Royal Veterinary Hospital in Sulaymaniyah. Select your pet, service, doctor, and preferred time.">
+  <meta name="keywords" content="veterinary hospital sulaymaniyah, vet clinic kurdistan, animal hospital iraq, pet surgery, cat care, dog vaccination, emergency vet">
+  <meta name="author" content="Royal Veterinary Hospital">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://royalvethospital.com/appointment.html">
+  <meta property="og:title" content="Book an Appointment Online | Royal Veterinary Hospital Sulaymaniyah | Royal Veterinary Hospital">
+  <meta property="og:description" content="Book an appointment with specialist veterinary surgeons and clinicians at Royal Veterinary Hospital in Sulaymaniyah. Select your pet, service, doctor, and preferred time.">
+  <meta property="og:image" content="assets/hero-pets.webp">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="Book an Appointment Online | Royal Veterinary Hospital Sulaymaniyah | Royal Veterinary Hospital">
+  <meta property="twitter:description" content="Book an appointment with specialist veterinary surgeons and clinicians at Royal Veterinary Hospital in Sulaymaniyah. Select your pet, service, doctor, and preferred time.">
+  <meta property="twitter:image" content="assets/hero-pets.webp">
+
+  <title>Book an Appointment Online | Royal Veterinary Hospital Sulaymaniyah | Royal Veterinary Hospital</title>
+  <link rel="icon" type="image/png" href="assets/royal-logo.png">
+  <link rel="canonical" href="https://royalvethospital.com/appointment.html">
+  
+  <!-- Leaflet CSS for maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <!-- Master Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Structured Data JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VeterinaryCare",
+    "name": "Royal Veterinary Hospital",
+    "image": "https://royalvethospital.com/assets/royal-logo.png",
+    "telephone": "+9647701234567",
+    "url": "https://royalvethospital.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Gulan Street",
+      "addressLocality": "Sulaymaniyah",
+      "addressRegion": "Kurdistan Region",
+      "addressCountry": "IQ"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 35.5668,
+      "longitude": 45.4161
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
+        "opens": "08:30",
+        "closes": "21:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Friday"],
+        "opens": "10:00",
+        "closes": "19:00"
+      }
+    ],
+    "priceRange": "$$",
+    "hasMap": "https://www.google.com/maps/search/?api=1&query=Royal+Veterinary+Hospital+Sulaymaniyah"
+  }
+  </script>
+</head>
+<body id="top">
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+
+  <!-- Top Announcement & Emergency Bar -->
+  <aside class="top-bar" aria-label="Hospital announcement and emergency contact">
+    <div class="container top-bar-wrap">
+      <div class="top-bar-left">
+        <span class="emergency-pill">
+          <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+          <span data-i18n="emergencyTop">24/7 Emergency Triage Available</span>
+        </span>
+        <span class="live-status">
+          <span class="pulse-dot"></span>
+          <span class="live-status-text">Open Now · Closes at 9:00 PM</span>
+        </span>
+      </div>
+      <div class="top-bar-right">
+        <a href="tel:07701234567" class="top-bar-link">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.5 19.5 0 0 1-6-6A19.6 19.6 0 0 1 2.3 4.2 2 2 0 0 1 4.3 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.9L7.9 9.9a16 16 0 0 0 6.2 6.2l1.3-1.3a2 2 0 0 1 1.9-.6l3 .5A2 2 0 0 1 22 16.9Z"/></svg>
+          <span>0770 123 4567</span>
+        </a>
+        <a href="contact.html#map" class="top-bar-link">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <span>Sulaymaniyah, Gulan St</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+
+  <!-- Main Header -->
+  <header class="site-header">
+    <div class="container header-wrap">
+      <a href="index.html" class="brand" aria-label="Royal Veterinary Hospital Home">
+        <img src="assets/royal-logo-transparent.png" alt="Royal Veterinary Hospital" width="168" height="52">
+      </a>
+      <nav class="main-nav" aria-label="Main Navigation">
+        <a href="index.html">Home</a><a href="services.html">Services</a><a href="packages.html">Packages</a><a href="team.html">Our Team</a><a href="facilities.html">Facilities</a><a href="about.html">About Us</a><a href="contact.html">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <div class="language-switch" aria-label="Language selector">
+          <button type="button" class="lang-btn selected" data-lang="en">EN</button>
+          <button type="button" class="lang-btn" data-lang="ku">کوردی</button>
+        </div>
+        <a href="tel:07701234567" class="header-call" aria-label="Emergency telephone link">
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.5 19.5 0 0 1-6-6A19.6 19.6 0 0 1 2.3 4.2 2 2 0 0 1 4.3 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.9L7.9 9.9a16 16 0 0 0 6.2 6.2l1.3-1.3a2 2 0 0 1 1.9-.6l3 .5A2 2 0 0 1 22 16.9Z"/></svg>
+          <span>0770 123 4567</span>
+        </a>
+        <a href="appointment.html" class="btn btn-primary btn-sm" data-i18n="bookAppointment">Book Appointment</a>
+        <button class="menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+          <svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="mobile-panel">
+      <nav aria-label="Mobile Navigation">
+        <a href="index.html">Home</a><a href="services.html">Services</a><a href="packages.html">Packages</a><a href="team.html">Our Team</a><a href="facilities.html">Facilities</a><a href="about.html">About Us</a><a href="contact.html">Contact</a>
+        <a href="appointment.html" class="btn btn-primary full mobile-cta" data-i18n="bookAppointment">Book Appointment &rarr;</a>
+      </nav>
+    </div>
+  </header>
+
+
+<main id="main">
+  <!-- Appointment Header Hero -->
+  <section class="appointment-header-hero">
+    <div class="container">
+      <nav class="breadcrumbs" aria-label="Breadcrumb navigation">
+        <a href="index.html">Home</a>
+        <span>&rsaquo;</span>
+        <span>Book an Appointment</span>
+      </nav>
+
+      <div class="eyebrow">VISIT ROYAL VETERINARY HOSPITAL</div>
+      <h1>Let’s Care For <em>Your Best Friend.</em></h1>
+      <p data-i18n="appointmentIntro" style="font-size:16px;color:var(--ink-secondary);max-width:680px;margin-top:10px;">This form prepares your preferred visit details only. It does not send a request to the hospital. Please call reception to confirm.</p>
+    </div>
+  </section>
+
+  <!-- Interactive Multi-Step Form & Aside Layout -->
+  <section class="section" style="padding-top:40px;">
+    <div class="container appointment-layout">
+      <!-- Left: Multi-Step Wizard -->
+      <div class="wizard-container">
+        <!-- Step Indicators -->
+        <div class="wizard-stepper" aria-label="Appointment booking steps">
+          <div class="step-indicator active" data-step="1">
+            <div class="step-bubble">1</div>
+            <span class="step-label">Pet Info</span>
+          </div>
+          <div class="step-indicator" data-step="2">
+            <div class="step-bubble">2</div>
+            <span class="step-label">Service & Doctor</span>
+          </div>
+          <div class="step-indicator" data-step="3">
+            <div class="step-bubble">3</div>
+            <span class="step-label">Date & Time</span>
+          </div>
+          <div class="step-indicator" data-step="4">
+            <div class="step-bubble">4</div>
+            <span class="step-label">Your Details</span>
+          </div>
+        </div>
+
+        <!-- Wizard Form -->
+        <form id="appointment-wizard-form" class="appointment-form" novalidate>
+          <!-- STEP 1: PET DETAILS -->
+          <div class="wizard-step active" data-step="1">
+            <div class="form-heading">
+              <div class="eyebrow small">STEP 01 OF 04</div>
+              <h3>Tell Us About Your Pet</h3>
+              <p>Basic information helps our clinicians prepare the appropriate examination suite.</p>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="appt-pet-name">Pet's Name *</label>
+                <input type="text" id="appt-pet-name" name="petName" required placeholder="e.g. Leo, Bella, Milo">
+              </div>
+              <div class="form-group">
+                <label for="appt-pet-type">Species / Animal Type *</label>
+                <select id="appt-pet-type" name="petType" required>
+                  <option value="">Select species</option>
+                  <option value="Dog">Dog (Canine)</option>
+                  <option value="Cat">Cat (Feline)</option>
+                  <option value="Bird">Bird (Avian)</option>
+                  <option value="Rabbit">Rabbit / Small Mammal</option>
+                  <option value="Other">Other Species</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="appt-pet-breed">Breed / Mix</label>
+                <input type="text" id="appt-pet-breed" name="petBreed" placeholder="e.g. Golden Retriever, Persian">
+              </div>
+              <div class="form-group">
+                <label for="appt-pet-age">Age (Years or Months)</label>
+                <input type="text" id="appt-pet-age" name="petAge" placeholder="e.g. 2 years, 6 months">
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: SERVICE & DOCTOR -->
+          <div class="wizard-step" data-step="2">
+            <div class="form-heading">
+              <div class="eyebrow small">STEP 02 OF 04</div>
+              <h3>Choose Care & Clinician</h3>
+              <p>Select the medical department or preferred doctor for your visit.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="appt-service">Service Needed *</label>
+              <select id="appt-service" name="service" required>
+                <option value="">Select clinical service</option>
+                <option value="General Health Check">General Health Check & Wellness Exam</option>
+                <option value="Vaccination & Passports">Vaccination & Travel Passports</option>
+                <option value="Surgery & Critical Care">Surgery Consultation & Planning</option>
+                <option value="Veterinary Dentistry">Dental Examination & Cleaning</option>
+                <option value="In-House Lab & X-Ray">Diagnostic Lab & Digital Radiography</option>
+                <option value="Therapeutic Grooming">Therapeutic Grooming & Medicated Spa</option>
+                <option value="Puppy Kitten Starter Plan">Puppy / Kitten Starter Plan ($75)</option>
+                <option value="Preventive Plus Plan">Preventive Plus Annual Care ($140)</option>
+                <option value="Golden Years Senior Plan">Golden Years Senior Plan ($195)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="appt-doctor">Preferred Veterinarian</label>
+              <select id="appt-doctor" name="doctor">
+                <option value="Any Available Specialist">First Available Medical Specialist</option>
+                <option value="Dr. Alan Rashid">Dr. Alan Rashid (Chief Surgeon · Orthopedics)</option>
+                <option value="Dr. Sara Karim">Dr. Sara Karim (Feline Medicine & Internal Care)</option>
+                <option value="Dr. Rebin Omer">Dr. Rebin Omer (Anesthesiology & Critical Care)</option>
+                <option value="Dr. Choman Bakr">Dr. Choman Bakr (Dentistry & Exotic Pets)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="appt-reason">Reason for Visit / Main Concerns</label>
+              <textarea id="appt-reason" name="reason" rows="3" placeholder="Briefly describe any symptoms, changes in appetite, or specific checks required..."></textarea>
+            </div>
+          </div>
+
+          <!-- STEP 3: DATE & TIME -->
+          <div class="wizard-step" data-step="3">
+            <div class="form-heading">
+              <div class="eyebrow small">STEP 03 OF 04</div>
+              <h3>Preferred Schedule</h3>
+              <p>Choose when it is most convenient for you to visit our Sulaymaniyah clinic.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="appt-date">Preferred Date *</label>
+              <input type="date" id="appt-date" name="date" required>
+            </div>
+
+            <div class="form-group">
+              <label>Preferred Time Slot *</label>
+              <div class="time-slots-grid">
+                <label class="time-slot-card selected">
+                  <input type="radio" name="timeSlot" value="Morning (09:00 - 12:00)" checked>
+                  <strong>Morning</strong>
+                  <span>09:00 &ndash; 12:00</span>
+                </label>
+                <label class="time-slot-card">
+                  <input type="radio" name="timeSlot" value="Afternoon (13:00 - 17:00)">
+                  <strong>Afternoon</strong>
+                  <span>13:00 &ndash; 17:00</span>
+                </label>
+                <label class="time-slot-card">
+                  <input type="radio" name="timeSlot" value="Evening (18:00 - 21:00)">
+                  <strong>Evening</strong>
+                  <span>18:00 &ndash; 21:00</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 4: GUARDIAN CONTACT -->
+          <div class="wizard-step" data-step="4">
+            <div class="form-heading">
+              <div class="eyebrow small">STEP 04 OF 04</div>
+              <h3>Guardian Details</h3>
+              <p>We need your contact information to confirm your booking and send appointment reminders.</p>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="appt-owner-name">Guardian Full Name *</label>
+                <input type="text" id="appt-owner-name" name="ownerName" required placeholder="Your full name" autocomplete="name">
+              </div>
+              <div class="form-group">
+                <label for="appt-phone">Mobile Phone Number *</label>
+                <input type="tel" id="appt-phone" name="phone" required placeholder="0770 xxx xxxx" autocomplete="tel">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="appt-email">Email Address (Optional &ndash; for digital calendar invite)</label>
+              <input type="email" id="appt-email" name="email" placeholder="name@example.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label for="appt-notes">Additional Notes / Special Accommodations</label>
+              <textarea id="appt-notes" name="notes" rows="3" placeholder="Does your pet have mobility issues, fear of other dogs, or medication allergies?"></textarea>
+            </div>
+          </div>
+
+          <!-- Wizard Action Buttons -->
+          <div class="wizard-buttons">
+            <button type="button" id="wizard-prev-btn" class="btn btn-outline" style="visibility:hidden;">&larr; Previous</button>
+            <button type="button" id="wizard-next-btn" class="btn btn-primary">Continue &rarr;</button>
+            <button type="submit" id="wizard-submit-btn" class="btn btn-primary" style="display:none;"><span data-i18n="prepareRequest">Prepare Request</span> &rarr;</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right: Real-time Live Summary Sidebar -->
+      <aside class="booking-summary-aside" aria-label="Appointment Request Summary">
+        <div class="summary-header">
+          <div class="eyebrow small" style="color:#a7f3d0;margin-bottom:4px;">LIVE OVERVIEW</div>
+          <h3>Booking Summary</h3>
+          <p>Updates dynamically as you complete steps</p>
+        </div>
+
+        <div class="summary-content">
+          <div class="summary-row">
+            <span>Patient:</span>
+            <span id="summary-patient">—</span>
+          </div>
+          <div class="summary-row">
+            <span>Service:</span>
+            <span id="summary-service">General Health Check</span>
+          </div>
+          <div class="summary-row">
+            <span>Clinician:</span>
+            <span id="summary-doctor">Any Available Specialist</span>
+          </div>
+          <div class="summary-row">
+            <span>Schedule:</span>
+            <span id="summary-datetime">—</span>
+          </div>
+          <div class="summary-row">
+            <span>Guardian:</span>
+            <span id="summary-owner">—</span>
+          </div>
+        </div>
+
+        <div class="summary-guarantees">
+          <div class="summary-guarantee-item">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg>
+            <span>No upfront payment required to book</span>
+          </div>
+          <div class="summary-guarantee-item">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg>
+            <span>Complimentary 24-hr rescheduling</span>
+          </div>
+          <div class="summary-guarantee-item">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg>
+            <span>Dedicated client parking available</span>
+          </div>
+        </div>
+
+        <div style="padding:20px;border-top:1px solid var(--line);background:var(--white);text-align:center;">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Have an acute trauma or emergency?</p>
+          <a href="tel:07701234567" style="color:var(--green-dark);font-weight:800;font-size:14px;display:inline-flex;align-items:center;gap:6px;">
+            <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.5 19.5 0 0 1-6-6A19.6 19.6 0 0 1 2.3 4.2 2 2 0 0 1 4.3 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.9L7.9 9.9a16 16 0 0 0 6.2 6.2l1.3-1.3a2 2 0 0 1 1.9-.6l3 .5A2 2 0 0 1 22 16.9Z"/></svg>
+            <span>Call 24/7 Hotline: 0770 123 4567</span>
+          </a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Interactive Confirmation Receipt Modal -->
+  <div class="modal-overlay" id="receipt-modal" role="dialog" aria-modal="true" aria-labelledby="receipt-title">
+    <div class="receipt-modal-card">
+      <button type="button" class="modal-close-btn close-modal" aria-label="Close confirmation dialog">&times;</button>
+      <div class="receipt-top">
+        <div class="receipt-check-icon">
+          <svg class="icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 4 4L19 6"/></svg>
+        </div>
+        <h2 id="receipt-title" data-i18n="receiptTitle">Appointment Request Prepared</h2>
+        <p data-i18n="receiptSubtitle">Your preferred visit details are ready, but the hospital has not received your request.</p>
+      </div>
+
+      <div class="receipt-body">
+        <div class="receipt-ref-pill">
+          <span data-i18n="refCode">Local Reference</span>: <strong id="receipt-ref">RVH-000000</strong>
+        </div>
+
+        <div class="receipt-details-list">
+          <div class="receipt-detail-row">
+            <span data-i18n="owner">Pet Guardian:</span>
+            <span id="receipt-owner">—</span>
+          </div>
+          <div class="receipt-detail-row">
+            <span data-i18n="pet">Patient:</span>
+            <span id="receipt-pet">—</span>
+          </div>
+          <div class="receipt-detail-row">
+            <span data-i18n="service">Service:</span>
+            <span id="receipt-service">—</span>
+          </div>
+          <div class="receipt-detail-row">
+            <span data-i18n="doctor">Veterinarian:</span>
+            <span id="receipt-doctor">—</span>
+          </div>
+          <div class="receipt-detail-row">
+            <span data-i18n="dateTime">Schedule:</span>
+            <span id="receipt-datetime">—</span>
+          </div>
+        </div>
+
+        <div style="font-size:12.5px;color:var(--muted);text-align:center;margin-bottom:24px;line-height:1.5;">
+          <span data-i18n="appointmentNotSentNote">No request has been sent. Call reception to confirm:</span> <a href="tel:07701234567">0770 123 4567</a>
+        </div>
+
+        <div class="receipt-actions">
+          <button type="button" id="btn-download-ics" class="btn btn-outline full" style="font-size:13px;">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/></svg>
+            <span data-i18n="addToCalendar">Add to Calendar (.ics)</span>
+          </button>
+          <button type="button" id="btn-print-receipt" class="btn btn-secondary full" style="font-size:13px;">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            <span data-i18n="printReceipt">Print Receipt</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+  <!-- Site Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-lead">
+          <a href="index.html" class="footer-logo">
+            <img src="assets/royal-logo-white.png" alt="Royal Veterinary Hospital" width="168" height="52">
+          </a>
+          <p>Sulaymaniyah's premier veterinary hospital dedicated to compassionate medical excellence, advanced diagnostics, and fear-free clinical care for your animal companions.</p>
+          <div class="accreditations-strip">
+            <span class="accreditation-pill">AAHA Member Hospital</span>
+            <span class="accreditation-pill">Fear-Free Certified</span>
+            <span class="accreditation-pill">24/7 Emergency Facility</span>
+          </div>
+        </div>
+        <div>
+          <h4>Medical Services</h4>
+          <nav class="footer-nav">
+            <a href="services.html">All Clinical Services</a>
+            <a href="service-general-care.html">Wellness & Physical Exams</a>
+            <a href="service-surgery.html">Soft Tissue & Orthopedic Surgery</a>
+            <a href="service-diagnostics.html">Laboratory & Digital X-Ray</a>
+            <a href="service-vaccination.html">Vaccine Passports & Prevention</a>
+            <a href="service-dental-care.html">Veterinary Dentistry</a>
+            <a href="service-grooming.html">Therapeutic Spa & Grooming</a>
+          </nav>
+        </div>
+        <div>
+          <h4>The Hospital</h4>
+          <nav class="footer-nav">
+            <a href="about.html">Our Hospital Story</a>
+            <a href="team.html">Veterinary Specialists</a>
+            <a href="facilities.html">Virtual Facility Tour</a>
+            <a href="packages.html">Annual Care Packages</a>
+            <a href="contact.html">Emergency & Directions</a>
+            <a href="appointment.html">Book Online Visit</a>
+          </nav>
+        </div>
+        <div>
+          <h4>Contact & Hours</h4>
+          <div class="footer-contact-list">
+            <div class="footer-contact-item">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <span>Gulan Street, Sulaymaniyah, Kurdistan Region, Iraq</span>
+            </div>
+            <div class="footer-contact-item">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.5 19.5 0 0 1-6-6A19.6 19.6 0 0 1 2.3 4.2 2 2 0 0 1 4.3 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.9L7.9 9.9a16 16 0 0 0 6.2 6.2l1.3-1.3a2 2 0 0 1 1.9-.6l3 .5A2 2 0 0 1 22 16.9Z"/></svg>
+              <a href="tel:07701234567">0770 123 4567</a> (24/7 Hotline)
+            </div>
+            <div class="footer-contact-item">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              <span>Sat – Thu: 8:30 AM – 9:00 PM<br>Friday: 10:00 AM – 7:00 PM</span>
+            </div>
+          </div>
+          <div class="footer-newsletter">
+            <h4 style="margin-top:20px;margin-bottom:8px;font-size:13px;">Pet Health Updates</h4>
+            <form class="newsletter-form">
+              <input type="email" placeholder="Your email address" required aria-label="Email address for newsletter">
+              <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Royal Veterinary Hospital. All rights reserved. Sulaymaniyah, Kurdistan Region.</span>
+        <div class="footer-bottom-links">
+          <a href="contact.html">Privacy Policy</a>
+          <a href="contact.html">Patient Rights</a>
+          <a href="#top">Back to top &uarr;</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Application JS -->
+  <script src="app.js"></script>
+</body>
+</html>
+
