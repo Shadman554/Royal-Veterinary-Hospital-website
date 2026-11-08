@@ -584,6 +584,12 @@
   transform: scaleX(-1);
 }
 
+:dir(rtl) .royal-curved-frame-image {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scaleX(-1);
+}
+
 /* VISIT SPECIFICS */
 .royal-address,
 .royal-directions a {

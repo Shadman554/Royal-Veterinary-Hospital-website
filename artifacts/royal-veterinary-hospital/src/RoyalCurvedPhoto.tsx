@@ -36,12 +36,14 @@ export function RoyalCurvedPhoto({ src, alt, className = '' }: RoyalCurvedPhotoP
         <clipPath id={clipId}><path d={PHOTO_PATH} /></clipPath>
       </defs>
       <path d={RIBBON_PATH} fill={`url(#${gradientId})`} />
-      <image
-        href={src}
-        x="753" y="1982" width="889" height="389"
-        preserveAspectRatio="xMidYMid slice"
-        clipPath={`url(#${clipId})`}
-      />
+      <g clipPath={`url(#${clipId})`}>
+        <image
+          className="royal-curved-frame-image"
+          href={src}
+          x="753" y="1982" width="889" height="389"
+          preserveAspectRatio="xMidYMid slice"
+        />
+      </g>
     </svg>
   );
 }
