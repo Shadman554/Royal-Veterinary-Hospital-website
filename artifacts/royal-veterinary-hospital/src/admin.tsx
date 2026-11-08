@@ -876,7 +876,7 @@ function AppointmentInbox({
   );
   const exportCsv = () => {
     const escape = (v: string) =>
-      `"${(/^[=+@\-\t\r]/.test(v) ? "'" : "") + v.replaceAll('"', '""')}"`;
+      `"${(/^[\s\u0000-\u001f]*[=+@\-\t\r]/.test(v) ? "'" : "") + v.replaceAll('"', '""')}"`;
     const csv = [
       [
         "Reference",

@@ -5,14 +5,11 @@
   "scripts": {
     "dev:royal": "node scripts/royal-dev.mjs",
     "build": "pnpm run typecheck && pnpm -r --workspace-concurrency=1 --if-present run build",
-    "start": "node --enable-source-maps artifacts/api-server/dist/index.mjs",
+    "start": "node scripts/royal-start.mjs",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
   "private": true,
-  "dependencies": {
-    "@replit/connectors-sdk": "^0.4.3"
-  },
   "devDependencies": {
     "@rollup/rollup-win32-x64-msvc": "4.64.5",
     "prettier": "^3.9.10",

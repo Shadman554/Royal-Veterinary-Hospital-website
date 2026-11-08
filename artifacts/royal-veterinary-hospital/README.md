@@ -15,7 +15,7 @@ Requires Node 24 or later. Open http://localhost:5173 and http://localhost:5173/
 
 ## First administrator
 
-On first API startup, a unique setup key is written to `.local/admin-setup-key.txt` at the repository root. Open `/admin`, paste that key, and choose your own email address and password (at least 12 characters). Setup works once and removes the key file. There is no shared default password. Do not commit or publish the key or database. Staff access is also linked from the public footer.
+On first SQLite API startup, a unique setup key is written to `.local/admin-setup-key.txt` at the repository root. For PostgreSQL, set a unique random `ROYAL_SETUP_KEY` of at least 32 characters in the server environment before first startup. The key is not printed to logs. Open `/admin`, paste that key, and choose your own email address and password (at least 12 characters). Setup works once and removes the key file. There is no shared default password. Do not commit or publish the key or database. Staff access is also linked from the public footer.
 
 The dashboard includes real request counts, searchable appointment records, status and scheduling fields, private staff notes, CSV export, full service-guide editing, all three packages, team members and portraits, public FAQs, phone/address/hours/homepage settings, page text, image management, care categories and care steps, recent activity, password changes and sign-out. It uses one hospital administrator account; separate staff roles and automated email/SMS delivery are not included.
 
@@ -30,7 +30,7 @@ Open `/admin` and choose an editor. Changes become public when you select **Save
 - **Care categories / Care steps:** edit category names, descriptions, artwork and the explanations of each stage of care.
 - **Care packages / Questions & answers / Hospital settings:** edit the existing structured content as before.
 
-Uploads accept PNG, JPEG, WebP and GIF files up to 8 MB; the upload control checks image decoding and dimensions. Supplied SVG files remain available in the library, while new uploads use raster formats. Uploaded files have unique names and are stored in `media` beside the configured database (normally `.local/media`). **Back up this media folder along with the database.** Rebuilding does not replace saved content or uploaded images. Older databases automatically receive missing editor fields without overwriting saved data. Uploading selects a draft image; saving the editor publishes it. The page layout and route structure remain part of the website design rather than a drag-and-drop page builder.
+Uploads accept PNG, JPEG, WebP and GIF files up to 8 MB; the upload control checks image decoding and dimensions. Supplied SVG files remain available in the library, while new uploads use raster formats. Uploaded files have unique names and are stored in the database. Older uploads may also be present in `media` beside the configured SQLite database (normally `.local/media`). Back up both the database and any existing media folder. Rebuilding does not replace saved content or uploaded images. Older databases automatically receive missing editor fields without overwriting saved data. Uploading selects a draft image; saving the editor publishes it. The page layout and route structure remain part of the website design rather than a drag-and-drop page builder.
 
 ## Checks and build
 
@@ -69,7 +69,7 @@ The form validates required fields, phone format, a real future date within the 
 
 The default database is `.local/royal.sqlite` at the repository root. Source defaults seed a new database once; later builds preserve saved content. `ROYAL_DATABASE` may point to an absolute persistent storage path. Back up the database with a SQLite-aware backup tool, or stop the API cleanly before copying its database and journal files. Do not put runtime files under `public` or `dist`. Tests use isolated temporary databases; the visual QA server uses an in-memory database.
 
-For a self-hosted deployment, build both apps and run `pnpm --filter @workspace/api-server start` with `NODE_ENV=production`, `APP_ORIGIN=https://your-actual-hostname`, and `ROYAL_DATABASE` set to persistent storage. Set `PORT` as needed. The API serves the built frontend and application-route fallback. Terminate HTTPS at a trusted local reverse proxy; the server binds to `127.0.0.1` by default and trusts only loopback proxy addresses. Adapt the trust boundary explicitly if deploying in containers. Production cookies require HTTPS.
+For a self-hosted deployment, build both apps and run `pnpm --filter @workspace/api-server start` with `APP_ORIGIN=https://your-actual-hostname` and `ROYAL_DATABASE` set to persistent storage. Set `PORT` as needed. The API serves the built frontend and application-route fallback. Terminate HTTPS at a trusted local reverse proxy; the server listens on `0.0.0.0` by default and trusts one proxy hop in production. Restrict direct access to the application port so requests pass through the trusted proxy. Production cookies require HTTPS.
 
 Passwords use salted scrypt hashes. Sessions are server-side, expire after eight hours, use HttpOnly/SameSite cookies and are revoked on sign-out or password changes. Mutations require an approved Origin. Login, bootstrap and public submissions are rate-limited. Edits check version numbers to prevent silent overwrites, and appointment records are unavailable through the public content endpoint. The API does not log submitted contact details or passwords.
 
@@ -92,3 +92,7 @@ The homepage follows the supplied Royal hero reference, with live editable headi
 Edit translations in **Page text → Kurdish** groups. **Kurdish · Custom text** adds translations for new English wording, including new staff specialties or service descriptions. English booking values and service routes stay unchanged when the visitor switches languages. Images remain independently editable.
 
 Translation source files are in `src/locales/ckb-*.json`. `node sync-locales.mjs` registers them with the copy editor; both app builds run this automatically. Saved dashboard edits take precedence over bundled wording.
+
+External PostgreSQL connections require TLS with certificate and hostname verification. Localhost and Railway private-network hostnames use their private network connection. Rate limits are stored in the same database and apply across instances using that database. Ensure the database has persistent storage and access is restricted to the application.
+
+Use `pnpm start` to run the built project in production mode. The application port must only be reachable through the configured TLS reverse proxy when the production proxy setting is used. Set `HOST=127.0.0.1` when the proxy runs on the same host.

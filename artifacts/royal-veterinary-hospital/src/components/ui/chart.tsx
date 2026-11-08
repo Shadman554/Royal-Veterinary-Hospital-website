@@ -41,7 +41,7 @@ const ChartContainer = React.forwardRef<
   }
 >(({ id, className, children, config, ...props }, ref) => {
   const uniqueId = React.useId();
-  const chartId = `chart-${id || uniqueId.replace(/:/g, '')}`;
+  const chartId = `chart-${(id || uniqueId).replace(/[^a-zA-Z0-9_-]/g, '')}`;
 
   return (
     <ChartContext.Provider value={{ config }}>
@@ -66,8 +66,10 @@ ChartContainer.displayName = 'Chart';
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([, config]) => config.theme || config.color,
+    ([key, item]) => /^[a-zA-Z0-9_-]+$/.test(key) && (item.theme || item.color),
   );
+  const safeColor = (value?: string) =>
+    value && /^[a-zA-Z0-9#(),.%+\-\s]+$/.test(value) ? value : undefined;
 
   if (!colorConfig.length) {
     return null;
@@ -82,9 +84,10 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
-    const color =
+    const color = safeColor(
       itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color;
+      itemConfig.color,
+    );
     return color ? `  --color-${key}: ${color};` : null;
   })
   .join('\n')}

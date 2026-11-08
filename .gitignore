@@ -53,3 +53,14 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.pem
+*.key

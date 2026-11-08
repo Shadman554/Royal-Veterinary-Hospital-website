@@ -31,6 +31,12 @@ app.use((_req, res, next) => {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "same-origin",
+    "X-DNS-Prefetch-Control": "off",
+    "X-Download-Options": "noopen",
+    "X-Permitted-Cross-Domain-Policies": "none",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Resource-Policy": "same-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   });
   if (production)
     res.set({
@@ -56,7 +62,17 @@ app.use("/api", (_req, res) => {
 });
 if (production) {
   const publicDir = path.resolve(repoRoot, "artifacts/royal-veterinary-hospital/dist/public");
-  app.use(express.static(publicDir));
+  app.use((req, res, next) => {
+    if (req.path.split("/").some((segment) => segment.startsWith("."))) {
+      res.sendStatus(404);
+      return;
+    }
+    if (req.path === "/admin") {
+      res.set({ "X-Robots-Tag": "noindex, nofollow", "Cache-Control": "no-store" });
+    }
+    next();
+  });
+  app.use(express.static(publicDir, { dotfiles: "deny", index: false }));
   app.get("/{*path}", (_req, res) => {
     res.sendFile(path.join(publicDir, "index.html"));
   });

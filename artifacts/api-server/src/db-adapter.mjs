@@ -1,5 +1,5 @@
 import { DatabaseSync } from "node:sqlite";
-import { mkdirSync } from "node:fs";
+import { chmodSync, closeSync, mkdirSync, openSync } from "node:fs";
 import path from "node:path";
 import pg from "pg";
 
@@ -8,16 +8,22 @@ if (pg?.types?.setTypeParser) {
 }
 
 export function createDatabaseAdapter({ databaseUrl, databasePath = ".local/royal.sqlite" }) {
-  if (databaseUrl && /^(postgres|postgresql):\/\//i.test(databaseUrl)) {
+  if (databaseUrl && !/^(postgres|postgresql):\/\//i.test(databaseUrl)) {
+    throw new Error("DATABASE_URL must be a PostgreSQL connection URL.");
+  }
+  if (databaseUrl) {
     const { Pool } = pg;
+    const url = new URL(databaseUrl);
+    const hostname = url.hostname.toLowerCase();
+    const privateHost = ["localhost", "127.0.0.1", "[::1]"].includes(hostname) || hostname.endsWith(".railway.internal");
+    const sslmode = url.searchParams.get("sslmode");
+    const ssl = url.searchParams.get("ssl");
+    if (!privateHost && ((sslmode && sslmode !== "verify-full") || ssl === "0" || ssl === "false" || url.searchParams.get("uselibpqcompat") === "true")) {
+      throw new Error("External PostgreSQL connections require certificate and hostname verification.");
+    }
     const pool = new Pool({
       connectionString: databaseUrl,
-      ssl:
-        databaseUrl.includes("localhost") ||
-        databaseUrl.includes("127.0.0.1") ||
-        databaseUrl.includes(".railway.internal")
-          ? false
-          : { rejectUnauthorized: false },
+      ssl: privateHost ? false : { rejectUnauthorized: true },
     });
 
     let initPromise = null;
@@ -35,6 +41,12 @@ export function createDatabaseAdapter({ databaseUrl, databasePath = ".local/roya
               admin_id TEXT NOT NULL,
               expires BIGINT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS rate_limits (
+              key TEXT PRIMARY KEY,
+              requests INTEGER NOT NULL,
+              expires BIGINT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS rate_limits_expires_idx ON rate_limits (expires);
             CREATE TABLE IF NOT EXISTS content (
               id INTEGER PRIMARY KEY CHECK(id=1),
               json TEXT NOT NULL,
@@ -121,12 +133,17 @@ export function createDatabaseAdapter({ databaseUrl, databasePath = ".local/roya
 
   // SQLite implementation (completely synchronous)
   if (databasePath !== ":memory:") {
-    mkdirSync(path.dirname(databasePath), { recursive: true });
+    mkdirSync(path.dirname(databasePath), { recursive: true, mode: 0o700 });
+    const fd = openSync(databasePath, "a", 0o600);
+    closeSync(fd);
+    chmodSync(databasePath, 0o600);
   }
   const sqlite = new DatabaseSync(databasePath);
   sqlite.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;
     CREATE TABLE IF NOT EXISTS admins (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, admin_id TEXT NOT NULL, expires INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS rate_limits (key TEXT PRIMARY KEY, requests INTEGER NOT NULL, expires INTEGER NOT NULL);
+    CREATE INDEX IF NOT EXISTS rate_limits_expires_idx ON rate_limits (expires);
     CREATE TABLE IF NOT EXISTS content (id INTEGER PRIMARY KEY CHECK(id=1), json TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1);
     CREATE TABLE IF NOT EXISTS appointments (id TEXT PRIMARY KEY, request_key TEXT UNIQUE NOT NULL, data TEXT NOT NULL, status TEXT NOT NULL, staff_note TEXT NOT NULL DEFAULT '', confirmed_date TEXT NOT NULL DEFAULT '', confirmed_time TEXT NOT NULL DEFAULT '', version INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS activity (id INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT NOT NULL, created_at TEXT NOT NULL);

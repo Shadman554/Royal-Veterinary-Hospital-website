@@ -8,7 +8,6 @@ import {
   createHash,
 } from "node:crypto";
 import {
-  mkdirSync,
   existsSync,
   readFileSync,
   writeFileSync,
@@ -20,6 +19,7 @@ const statuses = ["new", "contacted", "confirmed", "completed", "cancelled"];
 const digest = (value) => createHash("sha256").update(value).digest("hex");
 const hashPassword = (password, salt = randomBytes(16).toString("hex")) =>
   `${salt}:${scryptSync(password, salt, 64).toString("hex")}`;
+const dummyPasswordHash = hashPassword(randomBytes(32).toString("hex"));
 const verifyPassword = (password, stored) => {
   const [salt, hash] = stored.split(":");
   return timingSafeEqual(
@@ -84,38 +84,30 @@ export function createRoyalApi({
       ? null
       : path.join(path.dirname(databasePath), "admin-setup-key.txt");
   let bootstrapKey = setupKey;
-  (async () => {
-    try {
-      const adminExists = await db.prepare("SELECT id FROM admins LIMIT 1").get();
-      if (!adminExists) {
-        if (!bootstrapKey) {
-          bootstrapKey =
-            keyPath && existsSync(keyPath)
-              ? readFileSync(keyPath, "utf8").trim()
-              : randomBytes(24).toString("hex");
-          if (keyPath) writeFileSync(keyPath, bootstrapKey, { mode: 0o600 });
-        }
-        console.log("==================================================");
-        console.log("🔑 ROYAL ADMIN SETUP KEY: " + bootstrapKey);
-        console.log("==================================================");
-      }
-    } catch (e) {
-      console.error("Setup key init error:", e);
+  const bootstrapReady = (async () => {
+    const adminExists = await db.prepare("SELECT id FROM admins LIMIT 1").get();
+    if (!adminExists && !bootstrapKey) {
+      if (!keyPath) return;
+      bootstrapKey = existsSync(keyPath)
+        ? readFileSync(keyPath, "utf8").trim()
+        : randomBytes(24).toString("hex");
+      if (!existsSync(keyPath)) writeFileSync(keyPath, bootstrapKey, { mode: 0o600, flag: "wx" });
     }
   })();
+  // The setup endpoints await initialization; avoid an unhandled rejection if the database is unavailable.
+  bootstrapReady.catch(() => {});
 
   const api = express.Router();
   const originSet = new Set(
     origin.split(",").map((s) => new URL(s.trim()).origin),
   );
-  const rates = new Map();
-  const limit = (key, max, ms) => {
+  const limit = async (key, max, ms) => {
     const now = Date.now();
-    for (const [k, v] of rates) if (v.until < now) rates.delete(k);
-    const value = rates.get(key) || { count: 0, until: now + ms };
-    if (++value.count > max)
-      fail("Too many attempts. Please try again later.", 429);
-    rates.set(key, value);
+    await db.prepare("DELETE FROM rate_limits WHERE expires <= ?").run(now);
+    const result = await db.prepare(
+      "INSERT INTO rate_limits (key, requests, expires) VALUES (?, 1, ?) ON CONFLICT (key) DO UPDATE SET requests = rate_limits.requests + 1 RETURNING requests",
+    ).get(digest(key), now + ms);
+    if (result.requests > max) fail("Too many attempts. Please try again later.", 429);
   };
   const audit = async (action) => {
     try {
@@ -273,7 +265,7 @@ export function createRoyalApi({
       limit: "8mb",
     }),
     async (req, res) => {
-      limit(`upload:${req.admin.id}`, 60, 60 * 60 * 1000);
+      await limit(`upload:${req.admin.id}`, 60, 60 * 60 * 1000);
       const bytes = req.body;
       if (!Buffer.isBuffer(bytes) || bytes.length < 12)
         fail("Upload a PNG, JPEG, WebP or GIF image.");
@@ -302,29 +294,24 @@ export function createRoyalApi({
         fail("The file is not a supported image.");
       }
       const filename = `${randomUUID()}.${ext}`;
-      try {
-        await db
-          .prepare(
-            "INSERT INTO media (filename, mime_type, bytes, created_at) VALUES (?,?,?,?)",
-          )
-          .run(filename, mimeType, bytes, new Date().toISOString());
-      } catch (e) {
-        console.error("DB media insert error:", e);
-      }
-      try {
-        mkdirSync(mediaDirectory, { recursive: true });
-        writeFileSync(path.join(mediaDirectory, filename), bytes, { flag: "wx" });
-      } catch {}
+      await db
+        .prepare("INSERT INTO media (filename, mime_type, bytes, created_at) VALUES (?,?,?,?)")
+        .run(filename, mimeType, bytes, new Date().toISOString());
       await audit("Image uploaded");
       res.status(201).json({ src: `/api/media/${filename}` });
     },
   );
   api.get("/content", async (_req, res) => res.json(await getContent()));
-  api.get("/admin/setup-status", async (_req, res) =>
-    res.json({ required: !(await db.prepare("SELECT id FROM admins LIMIT 1").get()) }),
-  );
+  api.get("/admin/setup-status", async (_req, res) => {
+    await bootstrapReady;
+    const required = !(await db.prepare("SELECT id FROM admins LIMIT 1").get());
+    if (required && secure && (!bootstrapKey || bootstrapKey.length < 32))
+      fail("Configure a setup key of at least 32 characters on the server.", 503);
+    res.json({ required });
+  });
   api.post("/admin/setup", async (req, res) => {
-    limit(`setup:${req.ip}`, 5, 15 * 60 * 1000);
+    await bootstrapReady;
+    await limit(`setup:${req.ip}`, 5, 15 * 60 * 1000);
     if (await db.prepare("SELECT id FROM admins LIMIT 1").get())
       fail("An administrator already exists.", 409);
     const key = str(req.body.setupKey, "Setup key", 100);
@@ -342,25 +329,40 @@ export function createRoyalApi({
     const password = str(req.body.password, "Password", 128);
     if (password.length < 12)
       fail("Use a password with at least 12 characters.");
-    const admin = { id: randomUUID(), email };
-    await db.prepare("INSERT INTO admins VALUES (?,?,?)").run(
-      admin.id,
-      email,
-      hashPassword(password),
-    );
-    bootstrapKey = null;
-    if (keyPath && existsSync(keyPath)) unlinkSync(keyPath);
-    await audit("Administrator account created");
-    await signIn(res, admin);
+    if (secure && bootstrapKey.length < 32)
+      fail("Configure a setup key of at least 32 characters on the server.", 503);
+    const lockKey = digest("admin-bootstrap-lock");
+    const now = Date.now();
+    const lock = await db.prepare(
+      "INSERT INTO rate_limits (key, requests, expires) VALUES (?, 1, ?) ON CONFLICT (key) DO UPDATE SET expires = excluded.expires WHERE rate_limits.expires <= ? RETURNING key",
+    ).get(lockKey, now + 300000, now);
+    if (!lock) fail("Administrator setup is already in progress.", 409);
+    try {
+      if (await db.prepare("SELECT id FROM admins LIMIT 1").get())
+        fail("An administrator already exists.", 409);
+      const admin = { id: randomUUID(), email };
+      await db.prepare("INSERT INTO admins VALUES (?,?,?)").run(
+        admin.id,
+        email,
+        hashPassword(password),
+      );
+      bootstrapKey = null;
+      if (keyPath && existsSync(keyPath)) unlinkSync(keyPath);
+      await audit("Administrator account created");
+      await signIn(res, admin);
+    } finally {
+      await db.prepare("DELETE FROM rate_limits WHERE key = ?").run(lockKey);
+    }
   });
   api.post("/admin/login", async (req, res) => {
-    limit(`login:${req.ip}`, 10, 15 * 60 * 1000);
+    await limit(`login:${req.ip}`, 10, 15 * 60 * 1000);
     const email = str(req.body.email, "Email", 150).toLowerCase();
     const password = str(req.body.password, "Password", 128);
     const admin = await db.prepare("SELECT * FROM admins WHERE email=?").get(email);
+    await limit(`login-account:${email}`, 30, 15 * 60 * 1000);
     const valid = verifyPassword(
       password,
-      admin?.password || hashPassword("invalid-login-placeholder"),
+      admin?.password || dummyPasswordHash,
     );
     if (!admin || !valid) fail("Email or password is incorrect.", 401);
     await signIn(res, admin);
@@ -379,7 +381,7 @@ export function createRoyalApi({
     res.json({ ok: true });
   });
   api.post("/admin/password", authenticate, async (req, res) => {
-    limit(`password:${req.admin.id}`, 5, 15 * 60 * 1000);
+    await limit(`password:${req.admin.id}`, 5, 15 * 60 * 1000);
     const current = str(req.body.currentPassword, "Current password", 128);
     const password = str(req.body.password, "New password", 128);
     const admin = await db
@@ -407,7 +409,7 @@ export function createRoyalApi({
       .prepare("SELECT id FROM appointments WHERE request_key=?")
       .get(requestKey);
     if (existing) return res.json({ id: existing.id });
-    limit(`booking:${req.ip}`, 10, 60 * 60 * 1000);
+    await limit(`booking:${req.ip}`, 10, 60 * 60 * 1000);
     const content = await getContent();
     const data = {
       name: str(body.name, "Name", 100),
