@@ -1,4 +1,8 @@
 {
+  "Admin access is unavailable": "چوونەژوورەوەی بەڕێوەبەر بەردەست نییە",
+  "Configure a setup key of at least 32 characters on the server.": "لە سێرڤەرەکەدا کلیلی ڕێکخستنێک دابنێ کە لانیکەم ٣٢ پیت بێت.",
+  "Try again": "دووبارە هەوڵ بدەوە",
+  "Use the one-time key configured on the server. For local SQLite, find it in .local/admin-setup-key.txt.": "کلیلی یەکجار بەکاربهێنە کە لە سێرڤەرەکەدا ڕێکخراوە. بۆ SQLiteی ناوخۆیی، لە .local/admin-setup-key.txt دەیدۆزیتەوە.",
   "Dashboard": "داشبۆرد",
   "Daily work": "کاری ڕۆژانە",
   "Website content": "ناوەڕۆکی ماڵپەڕ",

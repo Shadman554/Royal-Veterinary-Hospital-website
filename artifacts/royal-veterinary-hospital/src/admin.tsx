@@ -158,6 +158,19 @@ function StaffDashboard() {
         <p>{t("Opening your hospital workspace…")}</p>
       </div>
     );
+  if (error)
+    return (
+      <main className="admin-loading">
+        <ShieldCheck aria-hidden="true" />
+        <h1>{t("Admin access is unavailable")}</h1>
+        <p role="alert">{t(error)}</p>
+        <button className="button" type="button" onClick={() => window.location.reload()}>
+          {t("Try again")}
+        </button>
+        <Link href="/">{t("View website")}</Link>
+        <StaffSwitch />
+      </main>
+    );
   if (!user)
     return <AdminLogin setup={setup} initialError={error} onLogin={setUser} />;
   return (
@@ -202,37 +215,9 @@ function AdminLogin({
   }
   return (
     <div className="admin-auth">
-      <div className="admin-auth-story">
-        <Link href="/">
-          <img
-            src={`${ASSETS}royal-logo-transparent.png`}
-            alt={t("Royal Veterinary Hospital")}
-          />
-        </Link>
-        <div>
-          <span className="eyebrow">{t("THE CARE BEHIND THE CARE")}</span>
-          <h1>
-            {t("A clearer day.")}
-            <br />
-            {t("A cared-for community.")}
-          </h1>
-          <p>
-            {t("Your appointments, your team and your website.")}
-            <br />
-            {t("Together in one familiar place.")}
-          </p>
-          <div className="admin-auth-photo">
-            <img
-              src={`${ASSETS}royal-pets.png`}
-              alt={t("Royal’s dog and cat companions")}
-            />
-          </div>
-        </div>
-        <small>{t("Royal Veterinary Hospital · Staff workspace")}</small>
-      </div>
       <div className="admin-auth-panel">
         <div className="admin-auth-header">
-          <Link href="/" className="admin-auth-mobile-brand" aria-label={t("Royal Veterinary Hospital")}>
+          <Link href="/" className="admin-auth-brand" aria-label={t("Royal Veterinary Hospital")}>
             <SiteImage mediaKey="logo" src={`${ASSETS}royal-logo-transparent.png`} alt={t("Royal Veterinary Hospital")} />
           </Link>
           <StaffSwitch />
@@ -259,9 +244,7 @@ function AdminLogin({
                 />
               </label>
               <small className="admin-hint">
-                {t("The key is in")}
-                <code>{t(".local/admin-setup-key.txt")}</code>
-                {t("in your project folder. It works only once.")}
+                {t("Use the one-time key configured on the server. For local SQLite, find it in .local/admin-setup-key.txt.")}
               </small>
             </>
           )}
