@@ -1,220 +1,244 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
-import { ErrorBoundary } from '@/components/error-boundary';
-
-const pageFiles: Record<string, string> = {
-  '/': 'index.html',
-  '/services': 'services.html',
-  '/service-general-care': 'service-general-care.html',
-  '/service-vaccination': 'service-vaccination.html',
-  '/service-surgery': 'service-surgery.html',
-  '/service-dental-care': 'service-dental-care.html',
-  '/service-grooming': 'service-grooming.html',
-  '/service-diagnostics': 'service-diagnostics.html',
-  '/packages': 'packages.html',
-  '/team': 'team.html',
-  '/about': 'about.html',
-  '/facilities': 'facilities.html',
-  '/contact': 'contact.html',
-  '/appointment': 'appointment.html',
-};
-
-const imageMap: Record<string, string> = {
-  'hero-pets-exact.webp': 'hero-pets-mockup.webp',
-  'hero-clean.webp': 'hero-pets-mockup.webp',
-  'hospital-exterior.webp': 'facilities.svg',
-  'reception.webp': 'mobile-clinic.svg',
-  'service-checkup.webp': 'pet-consultation.svg',
-  'service-vaccination.webp': 'pet-vaccinations.svg',
-  'service-surgery.webp': 'cat-surgery-1.svg',
-  'service-dental.webp': 'pet-dental-care.svg',
-  'service-grooming.webp': 'pet-hydrotherapy.svg',
-  'service-diagnostics.webp': 'Advanced-CT-MRI-Imaging-1.svg',
-};
-
-const doctorInitials: Record<string, string> = {
-  'doctor-1.webp': 'AR',
-  'doctor-2.webp': 'SK',
-  'doctor-3.webp': 'RO',
-  'doctor-4.webp': 'CB',
-};
-
-const serviceRouteByFile: Record<string, string> = Object.fromEntries(
-  Object.entries(pageFiles).map(([route, filename]) => [filename, route]),
+import { useCopy } from "./website-content";
+import { useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
+import { Route, Switch, Router, useLocation } from "wouter";
+import { Header, Footer, PageIntro, NotFound } from "./site-ui";
+import {
+  About,
+  CareJourney,
+  Packages,
+  Team,
+  FAQ,
+  Visit,
+} from "./sections";
+import { Facilities } from "./site-pages";
+import { Appointment, Privacy } from "./booking-page";
+const Admin = lazy(() =>
+  import("./admin").then((module) => ({ default: module.Admin })),
 );
+import { useHospital } from "./site-state";
+import { HomePage } from "./home-page";
+import { ServiceDetail, ServiceDirectory } from "./service-experience";
+import { useLanguage } from "./language";
+import { RoyalWave } from "./RoyalWave";
 
-function routeForLocation() {
-  const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
-  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-  const cleanPath = base && pathname.startsWith(base) ? pathname.slice(base.length) || '/' : pathname;
-  return pageFiles[cleanPath] ? cleanPath : '/';
+function DocumentLanguage() {
+  const { language } = useLanguage();
+  const [location] = useLocation();
+  useLayoutEffect(() => {
+    const active = location === "/admin" ? "en" : language;
+    document.documentElement.lang = active;
+    document.documentElement.dir = active === "ckb" ? "rtl" : "ltr";
+  }, [language, location]);
+  return null;
 }
 
-function rewritePage(markup: string, basePath: string) {
-  const repairedMarkup = markup.replaceAll(
-    'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8 7.8 0 0 0 0 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z',
-    'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l8.12 8.12 8.12-8.12a5.5 5.5 0 0 0 0-7.78Z',
-  );
-  const documentPage = new DOMParser().parseFromString(repairedMarkup, 'text/html');
-  documentPage.querySelectorAll('script, link[rel="stylesheet"]').forEach((node) => node.remove());
+function Content() {
+  const t = useCopy();
 
-  documentPage.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((anchor) => {
-    const rawHref = anchor.getAttribute('href') || '';
-    const [fileName] = rawHref.split(/[?#]/);
-    const cleanRoute = serviceRouteByFile[fileName.split('/').pop() || ''];
-    if (cleanRoute) {
-      const suffix = rawHref.slice(fileName.length);
-      anchor.href = `${basePath}${cleanRoute === '/' ? '/' : cleanRoute}${suffix}`;
-    }
-  });
-
-  documentPage.querySelectorAll<HTMLImageElement>('img[src]').forEach((image) => {
-    const originalPath = image.getAttribute('src') || '';
-    const originalName = originalPath.split('/').pop() || '';
-    const initials = doctorInitials[originalName];
-    if (initials) {
-      const portrait = documentPage.createElement('div');
-      portrait.className = 'doctor-portrait-fallback';
-      portrait.setAttribute('role', 'img');
-      portrait.setAttribute('aria-label', image.alt || 'Veterinary clinician');
-      portrait.textContent = initials;
-      image.replaceWith(portrait);
-      return;
-    }
-    const mappedName = imageMap[originalName] || originalName;
-    image.src = `${basePath}/rvh/assets/${encodeURIComponent(mappedName).replace(/%20/g, '%20')}`;
-  });
-
-  documentPage.querySelectorAll<HTMLElement>('[style]').forEach((element) => {
-    const style = element.getAttribute('style') || '';
-    const updated = style.replace(/assets\/([^'")\s]+)/g, (_match, name: string) => {
-      const actualName = imageMap[name] || name;
-      return `${basePath}/rvh/assets/${encodeURIComponent(actualName)}`;
-    });
-    element.setAttribute('style', updated);
-  });
-
-  documentPage.documentElement.lang = 'en';
-  documentPage.documentElement.dir = 'ltr';
-  return {
-    html: documentPage.body.innerHTML,
-    title: documentPage.title || 'Royal Veterinary Hospital',
-    description:
-      documentPage.querySelector<HTMLMetaElement>('meta[name="description"]')?.content ||
-      'Compassionate veterinary care in Sulaymaniyah, Kurdistan Region, Iraq.',
-    direction: documentPage.documentElement.dir,
-  };
-}
-
-function ArchivePage() {
-  const route = routeForLocation();
-  const [page, setPage] = useState<ReturnType<typeof rewritePage> | null>(null);
-  const [error, setError] = useState(false);
-  const sourceFile = useMemo(() => pageFiles[route], [route]);
-  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const { services, settings } = useHospital();
+  const [location] = useLocation();
+  const main = useRef<HTMLElement>(null);
+  const previousLocation = useRef(location);
+  const historyNavigation = useRef(false);
 
   useEffect(() => {
-    let active = true;
-    setPage(null);
-    setError(false);
-    fetch(`${basePath}/rvh/pages/${sourceFile}`)
-      .then((response) => {
-        if (!response.ok) throw new Error('The page could not be loaded.');
-        return response.text();
-      })
-      .then((markup) => {
-        if (!active) return;
-        const translated = rewritePage(markup, basePath);
-        setPage(translated);
-        document.title = translated.title;
-        document.documentElement.lang = translated.direction === 'rtl' ? 'ku' : 'en';
-        document.documentElement.dir = translated.direction;
-        let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-        if (!description) {
-          description = document.createElement('meta');
-          description.name = 'description';
-          document.head.append(description);
-        }
-        description.content = translated.description;
-      })
-      .catch(() => {
-        if (active) setError(true);
+    const onPopState = () => { historyNavigation.current = true; };
+    const onPushState = () => { historyNavigation.current = false; };
+    window.addEventListener("popstate", onPopState, true);
+    window.addEventListener("pushState", onPushState, true);
+    return () => {
+      window.removeEventListener("popstate", onPopState, true);
+      window.removeEventListener("pushState", onPushState, true);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (previousLocation.current === location) return;
+    previousLocation.current = location;
+    if (!historyNavigation.current && !window.location.hash) {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+    historyNavigation.current = false;
+    main.current?.focus({ preventScroll: true });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const entry = main.current?.animate(
+      [{ opacity: 0.72 }, { opacity: 1 }],
+      { duration: 200, easing: "ease-out" },
+    );
+    return () => entry?.cancel();
+  }, [location]);
+  useEffect(() => {
+    const currentService = services.find(
+      (service) => location === `/service-${service.slug}`,
+    );
+    const label =
+      currentService?.title ||
+      (location === "/"
+        ? `${settings.heroLine1} ${settings.heroLine2}`
+        : location
+            .slice(1)
+            .replaceAll("-", " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase()));
+    document.title = `${t(label)} | Royal Veterinary Hospital`;
+    const description = document.querySelector('meta[name="description"]');
+    description?.setAttribute(
+      "content",
+      currentService
+        ? `${currentService.title} at Royal Veterinary Hospital, ${settings.city}. ${currentService.short} Explore treatment, visit preparation and common questions.`
+        : `Expert veterinary care in ${settings.city}. Explore ${services.filter((s) => !s.hidden).length} services, from preventive health and specialist medicine to surgery, rehabilitation and everyday support.`,
+    );
+    const structuredData = document.querySelector("#hospital-structured-data");
+    if (structuredData)
+      structuredData.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "VeterinaryCare",
+        name: "Royal Veterinary Hospital",
+        telephone: settings.phone,
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: settings.address,
+          addressLocality: settings.city,
+          addressRegion: settings.region,
+          addressCountry: "IQ",
+        },
       });
-    return () => {
-      active = false;
-    };
-  }, [basePath, sourceFile]);
-
-  useEffect(() => {
-    if (!page) return;
-    const stylesheet = document.createElement('link');
-    stylesheet.rel = 'stylesheet';
-    stylesheet.href = `${basePath}/rvh/styles.css`;
-    stylesheet.dataset.royalArchive = 'true';
-    document.head.append(stylesheet);
-
-    const initialize = () => {
-      const scripts: HTMLScriptElement[] = [];
-      const startApp = () => {
-        const appScript = document.createElement('script');
-        appScript.src = `${basePath}/rvh/app.js`;
-        appScript.onload = () => document.dispatchEvent(new Event('DOMContentLoaded'));
-        document.body.append(appScript);
-        scripts.push(appScript);
-      };
-      if (route === '/contact') {
-        const leafletCss = document.createElement('link');
-        leafletCss.rel = 'stylesheet';
-        leafletCss.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.append(leafletCss);
-        const leaflet = document.createElement('script');
-        leaflet.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        leaflet.onload = startApp;
-        leaflet.onerror = startApp;
-        document.body.append(leaflet);
-        scripts.push(leaflet);
-      } else {
-        startApp();
-      }
-      return scripts;
-    };
-    const scripts = initialize();
-    document.body.id = 'top';
-    return () => {
-      stylesheet.remove();
-      scripts.forEach((script) => script.remove());
-    };
-  }, [basePath, page, route]);
-
-  if (error) {
-    return (
-      <div className="archive-error" role="alert">
-        <h1>We couldn’t open this page</h1>
-        <p>Please try again, or return to the hospital homepage.</p>
-        <a href={`${basePath}/`}>Return to Royal Veterinary Hospital</a>
-      </div>
-    );
-  }
-  if (!page) {
-    return (
-      <div className="archive-loading" aria-label="Loading hospital information">
-        <div className="archive-skeleton" />
-      </div>
-    );
-  }
-  return <div className="archive-page" dangerouslySetInnerHTML={{ __html: page.html }} />;
-}
-
-function App() {
+  }, [location, services, settings]);
   return (
-    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-      <ErrorBoundary resetKey={window.location.pathname}>
-        <Switch>
-          <Route component={ArchivePage} />
-        </Switch>
-      </ErrorBoundary>
-    </WouterRouter>
+    <main id="main" ref={main} tabIndex={-1}>
+      <Switch>
+        <Route path="/">
+          <HomePage />
+        </Route>
+        <Route path="/services">
+          <ServiceDirectory />
+        </Route>
+        {services.map((service) => (
+          <Route key={service.slug} path={`/service-${service.slug}`}>
+            <ServiceDetail slug={service.slug} />
+          </Route>
+        ))}
+        <Route path="/packages">
+          <div className="royal-home">
+            <PageIntro
+              eyebrow={t("CARE PACKAGES")}
+              title={
+                <>
+                  {t("More happy years.")}
+                  <br />
+                  <span>{t("Together.")}</span>
+                </>
+              }
+              description={t(
+                "Care plans built around life’s little beginnings, everyday adventures and golden years.",
+              )}
+            />
+            <Packages full />
+            <RoyalWave className="royal-wave section-wave" />
+            <CareJourney />
+            <RoyalWave className="royal-wave section-wave" />
+            <div className="royal-body">
+              <FAQ />
+            </div>
+          </div>
+        </Route>
+        <Route path="/team">
+          <div className="royal-home">
+            <PageIntro
+              eyebrow={t("THE ROYAL TEAM")}
+              title={
+                <>
+                  {t("Their wellbeing.")}
+                  <br />
+                  <span>{t("Our shared purpose.")}</span>
+                </>
+              }
+              description={t(
+                "Get to know the people who care for your companion. A team of different specialties, brought together by a love of animals.",
+              )}
+            />
+            <Team full />
+            <RoyalWave className="royal-wave section-wave" />
+            <Visit />
+          </div>
+        </Route>
+        <Route path="/about">
+          <div className="royal-home">
+            <PageIntro
+              eyebrow={t("OUR STORY")}
+              title={
+                <>
+                  {t("Rooted in care.")}
+                  <br />
+                  <span>{t("Right here at home.")}</span>
+                </>
+              }
+              description={`Royal Veterinary Hospital. A familiar place for pets and the people who love them in ${settings.city}.`}
+            />
+            <About full />
+            <RoyalWave className="royal-wave section-wave flip-wave" />
+            <Team />
+            <RoyalWave className="royal-wave section-wave" />
+            <Visit />
+          </div>
+        </Route>
+        <Route path="/facilities">
+          <Facilities />
+        </Route>
+        <Route path="/contact">
+          <div className="royal-home">
+            <PageIntro
+              eyebrow={t("COME SAY HELLO")}
+              title={
+                <>
+                  {t("A friendly face.")}
+                  <br />
+                  <span>{t("A familiar place.")}</span>
+                </>
+              }
+              description={t(
+                "Call, message, or come in. Our team is here for you and your companion.",
+              )}
+            />
+            <Visit full />
+            <RoyalWave className="royal-wave section-wave" />
+            <div className="royal-body">
+              <FAQ />
+            </div>
+          </div>
+        </Route>
+        <Route path="/appointment">
+          <Appointment />
+        </Route>
+        <Route path="/privacy">
+          <Privacy />
+        </Route>
+        <Route>
+          <NotFound />
+        </Route>
+      </Switch>
+    </main>
   );
 }
-
-export default App;
+export default function App() {
+  return (
+    <Router base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+      <DocumentLanguage />
+      <Switch>
+        <Route path="/admin">
+          <Suspense
+            fallback={<div className="admin-loading">Loading workspace…</div>}
+          >
+            <Admin />
+          </Suspense>
+        </Route>
+        <Route>
+          <div id="top">
+            <Header />
+            <Content />
+            <Footer />
+          </div>
+        </Route>
+      </Switch>
+    </Router>
+  );
+}

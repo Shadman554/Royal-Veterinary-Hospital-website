@@ -1,0 +1,487 @@
+{
+  "logo": {
+    "label": "Brand · logo",
+    "src": "/rvh/assets/royal-logo-transparent.png",
+    "alt": "Royal Veterinary Hospital"
+  },
+  "heroDesktop": {
+    "label": "Homepage · desktop hero",
+    "src": "/rvh/assets/figma-hero-companions.png",
+    "alt": "A golden retriever and a cat together at Royal Veterinary Hospital"
+  },
+  "heroMobile": {
+    "label": "Homepage · mobile hero",
+    "src": "/rvh/assets/figma-hero-companions.png",
+    "alt": "Royal’s dog and cat companions"
+  },
+  "about": {
+    "label": "About · hospital photograph",
+    "src": "/rvh/assets/reference-exterior.jpg",
+    "alt": "Royal Veterinary Hospital entrance"
+  },
+  "visit": {
+    "label": "Contact · hospital photograph",
+    "src": "/rvh/assets/royal-hospital-map.png",
+    "alt": "Hospital location map"
+  },
+  "directory": {
+    "label": "Services · introduction photograph",
+    "src": "/rvh/assets/figma-hero-companions.png",
+    "alt": "Royal’s dog and cat companions"
+  },
+  "serviceHospital": {
+    "label": "Service guides · hospital photograph",
+    "src": "/rvh/assets/royal-hospital.png",
+    "alt": "Royal Veterinary Hospital"
+  },
+  "booking": {
+    "label": "Appointment · pet photograph",
+    "src": "/rvh/assets/royal-pets.png",
+    "alt": "A dog and cat at Royal"
+  },
+  "featured-0": {
+    "label": "Homepage service photo · General health checks",
+    "src": "/rvh/assets/reference-consultation.jpg",
+    "alt": "General health checks"
+  },
+  "featured-1": {
+    "label": "Homepage service photo · Vaccination & prevention",
+    "src": "/rvh/assets/reference-vaccination.jpg",
+    "alt": "Vaccination & prevention"
+  },
+  "featured-2": {
+    "label": "Homepage service photo · Surgery & recovery",
+    "src": "/rvh/assets/reference-surgery.jpg",
+    "alt": "Surgery & recovery"
+  },
+  "featured-3": {
+    "label": "Homepage service photo · Dental care",
+    "src": "/rvh/assets/reference-dental-care.jpg",
+    "alt": "Dental care"
+  },
+  "featured-4": {
+    "label": "Homepage service photo · Grooming & wellbeing",
+    "src": "/rvh/assets/reference-grooming.jpg",
+    "alt": "Grooming & wellbeing"
+  },
+  "featured-5": {
+    "label": "Homepage service photo · Imaging & diagnostics",
+    "src": "/rvh/assets/reference-diagnostics.jpg",
+    "alt": "Imaging & diagnostics"
+  },
+  "/rvh/assets/adult-vaccination.svg": {
+    "label": "Icon · adult vaccination",
+    "src": "/rvh/assets/adult-vaccination.svg",
+    "alt": ""
+  },
+  "/rvh/assets/Advanced-CT-MRI-Imaging-1.svg": {
+    "label": "Icon · Advanced CT MRI Imaging 1",
+    "src": "/rvh/assets/Advanced-CT-MRI-Imaging-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/after-surgery.svg": {
+    "label": "Icon · after surgery",
+    "src": "/rvh/assets/after-surgery.svg",
+    "alt": ""
+  },
+  "/rvh/assets/before-surgery.svg": {
+    "label": "Icon · before surgery",
+    "src": "/rvh/assets/before-surgery.svg",
+    "alt": ""
+  },
+  "/rvh/assets/cardiology-cta2-hover.svg": {
+    "label": "Icon · cardiology cta2 hover",
+    "src": "/rvh/assets/cardiology-cta2-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/cardiology.svg": {
+    "label": "Icon · cardiology",
+    "src": "/rvh/assets/cardiology.svg",
+    "alt": ""
+  },
+  "/rvh/assets/care-services-1-hover.svg": {
+    "label": "Icon · care services 1 hover",
+    "src": "/rvh/assets/care-services-1-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/care-services-2-hover.svg": {
+    "label": "Icon · care services 2 hover",
+    "src": "/rvh/assets/care-services-2-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/care-services-3-hover.svg": {
+    "label": "Icon · care services 3 hover",
+    "src": "/rvh/assets/care-services-3-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/cat-spaying.svg": {
+    "label": "Icon · cat spaying",
+    "src": "/rvh/assets/cat-spaying.svg",
+    "alt": ""
+  },
+  "/rvh/assets/cat-surgery-1.svg": {
+    "label": "Icon · cat surgery 1",
+    "src": "/rvh/assets/cat-surgery-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/cat-surgery-3.svg": {
+    "label": "Icon · cat surgery 3",
+    "src": "/rvh/assets/cat-surgery-3.svg",
+    "alt": ""
+  },
+  "/rvh/assets/cat-vaccinations.svg": {
+    "label": "Icon · cat vaccinations",
+    "src": "/rvh/assets/cat-vaccinations.svg",
+    "alt": ""
+  },
+  "/rvh/assets/checkup1-hover.svg": {
+    "label": "Icon · checkup1 hover",
+    "src": "/rvh/assets/checkup1-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/checkup2-hover.svg": {
+    "label": "Icon · checkup2 hover",
+    "src": "/rvh/assets/checkup2-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/checkup3-hover.svg": {
+    "label": "Icon · checkup3 hover",
+    "src": "/rvh/assets/checkup3-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/dental-services-1.svg": {
+    "label": "Icon · dental services 1",
+    "src": "/rvh/assets/dental-services-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/dental-services-2.svg": {
+    "label": "Icon · dental services 2",
+    "src": "/rvh/assets/dental-services-2.svg",
+    "alt": ""
+  },
+  "/rvh/assets/dental-services-3.svg": {
+    "label": "Icon · dental services 3",
+    "src": "/rvh/assets/dental-services-3.svg",
+    "alt": ""
+  },
+  "/rvh/assets/dermatology.svg": {
+    "label": "Icon · dermatology",
+    "src": "/rvh/assets/dermatology.svg",
+    "alt": ""
+  },
+  "/rvh/assets/Direct-and-Indirect-Ophthalmoscopy-1.svg": {
+    "label": "Icon · Direct and Indirect Ophthalmoscopy 1",
+    "src": "/rvh/assets/Direct-and-Indirect-Ophthalmoscopy-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/dog-spaying.svg": {
+    "label": "Icon · dog spaying",
+    "src": "/rvh/assets/dog-spaying.svg",
+    "alt": ""
+  },
+  "/rvh/assets/dog-vaccinations.svg": {
+    "label": "Icon · dog vaccinations",
+    "src": "/rvh/assets/dog-vaccinations.svg",
+    "alt": ""
+  },
+  "/rvh/assets/facilities.svg": {
+    "label": "Icon · facilities",
+    "src": "/rvh/assets/facilities.svg",
+    "alt": ""
+  },
+  "/rvh/assets/food-delivery.svg": {
+    "label": "Icon · food delivery",
+    "src": "/rvh/assets/food-delivery.svg",
+    "alt": ""
+  },
+  "/rvh/assets/grooming-services-1.svg": {
+    "label": "Icon · grooming services 1",
+    "src": "/rvh/assets/grooming-services-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/grooming-services-2.svg": {
+    "label": "Icon · grooming services 2",
+    "src": "/rvh/assets/grooming-services-2.svg",
+    "alt": ""
+  },
+  "/rvh/assets/grooming-services-3.svg": {
+    "label": "Icon · grooming services 3",
+    "src": "/rvh/assets/grooming-services-3.svg",
+    "alt": ""
+  },
+  "/rvh/assets/grooming.svg": {
+    "label": "Icon · grooming",
+    "src": "/rvh/assets/grooming.svg",
+    "alt": ""
+  },
+  "/rvh/assets/holistic-medicine.svg": {
+    "label": "Icon · holistic medicine",
+    "src": "/rvh/assets/holistic-medicine.svg",
+    "alt": ""
+  },
+  "/rvh/assets/how-holistic-works1.svg": {
+    "label": "Icon · how holistic works1",
+    "src": "/rvh/assets/how-holistic-works1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/how-holistic-works2.svg": {
+    "label": "Icon · how holistic works2",
+    "src": "/rvh/assets/how-holistic-works2.svg",
+    "alt": ""
+  },
+  "/rvh/assets/kitten.svg": {
+    "label": "Icon · kitten",
+    "src": "/rvh/assets/kitten.svg",
+    "alt": ""
+  },
+  "/rvh/assets/laparascopic-1.svg": {
+    "label": "Icon · laparascopic 1",
+    "src": "/rvh/assets/laparascopic-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/laparascopic-2.svg": {
+    "label": "Icon · laparascopic 2",
+    "src": "/rvh/assets/laparascopic-2.svg",
+    "alt": ""
+  },
+  "/rvh/assets/laparascopic-3.svg": {
+    "label": "Icon · laparascopic 3",
+    "src": "/rvh/assets/laparascopic-3.svg",
+    "alt": ""
+  },
+  "/rvh/assets/laparascopic.svg": {
+    "label": "Icon · laparascopic",
+    "src": "/rvh/assets/laparascopic.svg",
+    "alt": ""
+  },
+  "/rvh/assets/mobile-clinic.svg": {
+    "label": "Icon · mobile clinic",
+    "src": "/rvh/assets/mobile-clinic.svg",
+    "alt": ""
+  },
+  "/rvh/assets/neurology-conditions-1.svg": {
+    "label": "Icon · neurology conditions 1",
+    "src": "/rvh/assets/neurology-conditions-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/neurology-conditions-2.svg": {
+    "label": "Icon · neurology conditions 2",
+    "src": "/rvh/assets/neurology-conditions-2.svg",
+    "alt": ""
+  },
+  "/rvh/assets/neurology-conditions-5.svg": {
+    "label": "Icon · neurology conditions 5",
+    "src": "/rvh/assets/neurology-conditions-5.svg",
+    "alt": ""
+  },
+  "/rvh/assets/neurology.svg": {
+    "label": "Icon · neurology",
+    "src": "/rvh/assets/neurology.svg",
+    "alt": ""
+  },
+  "/rvh/assets/oncology-diagnostics-1-hover.svg": {
+    "label": "Icon · oncology diagnostics 1 hover",
+    "src": "/rvh/assets/oncology-diagnostics-1-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/oncology-diagnostics-2-hover.svg": {
+    "label": "Icon · oncology diagnostics 2 hover",
+    "src": "/rvh/assets/oncology-diagnostics-2-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/oncology.svg": {
+    "label": "Icon · oncology",
+    "src": "/rvh/assets/oncology.svg",
+    "alt": ""
+  },
+  "/rvh/assets/ophthalmology.svg": {
+    "label": "Icon · ophthalmology",
+    "src": "/rvh/assets/ophthalmology.svg",
+    "alt": ""
+  },
+  "/rvh/assets/orthopedic-17.svg": {
+    "label": "Icon · orthopedic 17",
+    "src": "/rvh/assets/orthopedic-17.svg",
+    "alt": ""
+  },
+  "/rvh/assets/pet-consultation.svg": {
+    "label": "Icon · pet consultation",
+    "src": "/rvh/assets/pet-consultation.svg",
+    "alt": ""
+  },
+  "/rvh/assets/pet-dental-care.svg": {
+    "label": "Icon · pet dental care",
+    "src": "/rvh/assets/pet-dental-care.svg",
+    "alt": ""
+  },
+  "/rvh/assets/pet-diet-1-hover.svg": {
+    "label": "Icon · pet diet 1 hover",
+    "src": "/rvh/assets/pet-diet-1-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/pet-diet-2-hover.svg": {
+    "label": "Icon · pet diet 2 hover",
+    "src": "/rvh/assets/pet-diet-2-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/pet-hydrotherapy.svg": {
+    "label": "Icon · pet hydrotherapy",
+    "src": "/rvh/assets/pet-hydrotherapy.svg",
+    "alt": ""
+  },
+  "/rvh/assets/pet-relocation.svg": {
+    "label": "Icon · pet relocation",
+    "src": "/rvh/assets/pet-relocation.svg",
+    "alt": ""
+  },
+  "/rvh/assets/pet-taxi.svg": {
+    "label": "Icon · pet taxi",
+    "src": "/rvh/assets/pet-taxi.svg",
+    "alt": ""
+  },
+  "/rvh/assets/pet-vaccinations.svg": {
+    "label": "Icon · pet vaccinations",
+    "src": "/rvh/assets/pet-vaccinations.svg",
+    "alt": ""
+  },
+  "/rvh/assets/pet-welfare.svg": {
+    "label": "Icon · pet welfare",
+    "src": "/rvh/assets/pet-welfare.svg",
+    "alt": ""
+  },
+  "/rvh/assets/physio-treatment-1.svg": {
+    "label": "Icon · physio treatment 1",
+    "src": "/rvh/assets/physio-treatment-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/physio-treatment-2.svg": {
+    "label": "Icon · physio treatment 2",
+    "src": "/rvh/assets/physio-treatment-2.svg",
+    "alt": ""
+  },
+  "/rvh/assets/physio-treatment-3.svg": {
+    "label": "Icon · physio treatment 3",
+    "src": "/rvh/assets/physio-treatment-3.svg",
+    "alt": ""
+  },
+  "/rvh/assets/physiotherapy.svg": {
+    "label": "Icon · physiotherapy",
+    "src": "/rvh/assets/physiotherapy.svg",
+    "alt": ""
+  },
+  "/rvh/assets/puppy-vaccination.svg": {
+    "label": "Icon · puppy vaccination",
+    "src": "/rvh/assets/puppy-vaccination.svg",
+    "alt": ""
+  },
+  "/rvh/assets/recovery.svg": {
+    "label": "Icon · recovery",
+    "src": "/rvh/assets/recovery.svg",
+    "alt": ""
+  },
+  "/rvh/assets/relocation-role-1.svg": {
+    "label": "Icon · relocation role 1",
+    "src": "/rvh/assets/relocation-role-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/relocation-role-2.svg": {
+    "label": "Icon · relocation role 2",
+    "src": "/rvh/assets/relocation-role-2.svg",
+    "alt": ""
+  },
+  "/rvh/assets/senior.svg": {
+    "label": "Icon · senior",
+    "src": "/rvh/assets/senior.svg",
+    "alt": ""
+  },
+  "/rvh/assets/skin-conditions-1.svg": {
+    "label": "Icon · skin conditions 1",
+    "src": "/rvh/assets/skin-conditions-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/skin-conditions-2.svg": {
+    "label": "Icon · skin conditions 2",
+    "src": "/rvh/assets/skin-conditions-2.svg",
+    "alt": ""
+  },
+  "/rvh/assets/skin-conditions-3.svg": {
+    "label": "Icon · skin conditions 3",
+    "src": "/rvh/assets/skin-conditions-3.svg",
+    "alt": ""
+  },
+  "/rvh/assets/soft-tissue.svg": {
+    "label": "Icon · soft tissue",
+    "src": "/rvh/assets/soft-tissue.svg",
+    "alt": ""
+  },
+  "/rvh/assets/spay.svg": {
+    "label": "Icon · spay",
+    "src": "/rvh/assets/spay.svg",
+    "alt": ""
+  },
+  "/rvh/assets/specialist.svg": {
+    "label": "Icon · specialist",
+    "src": "/rvh/assets/specialist.svg",
+    "alt": ""
+  },
+  "/rvh/assets/surgery.svg": {
+    "label": "Icon · surgery",
+    "src": "/rvh/assets/surgery.svg",
+    "alt": ""
+  },
+  "/rvh/assets/therapies-1-hover.svg": {
+    "label": "Icon · therapies 1 hover",
+    "src": "/rvh/assets/therapies-1-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/Tonometry-for-Glaucoma-Evaluation-1.svg": {
+    "label": "Icon · Tonometry for Glaucoma Evaluation 1",
+    "src": "/rvh/assets/Tonometry-for-Glaucoma-Evaluation-1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/type-dog.svg": {
+    "label": "Icon · type dog",
+    "src": "/rvh/assets/type-dog.svg",
+    "alt": ""
+  },
+  "/rvh/assets/vaccination-process1-hover.svg": {
+    "label": "Icon · vaccination process1 hover",
+    "src": "/rvh/assets/vaccination-process1-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/vaccination-process5-hover.svg": {
+    "label": "Icon · vaccination process5 hover",
+    "src": "/rvh/assets/vaccination-process5-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/vet-for-cat-hover.svg": {
+    "label": "Icon · vet for cat hover",
+    "src": "/rvh/assets/vet-for-cat-hover.svg",
+    "alt": ""
+  },
+  "/rvh/assets/vet-for-cat1.svg": {
+    "label": "Icon · vet for cat1",
+    "src": "/rvh/assets/vet-for-cat1.svg",
+    "alt": ""
+  },
+  "/rvh/assets/vet-for-cat2.svg": {
+    "label": "Icon · vet for cat2",
+    "src": "/rvh/assets/vet-for-cat2.svg",
+    "alt": ""
+  },
+  "/rvh/assets/vet-for-cat3.svg": {
+    "label": "Icon · vet for cat3",
+    "src": "/rvh/assets/vet-for-cat3.svg",
+    "alt": ""
+  },
+  "/rvh/assets/vet-for-dog.svg": {
+    "label": "Icon · vet for dog",
+    "src": "/rvh/assets/vet-for-dog.svg",
+    "alt": ""
+  },
+  "/rvh/assets/wellness-exams.svg": {
+    "label": "Icon · wellness exams",
+    "src": "/rvh/assets/wellness-exams.svg",
+    "alt": ""
+  }
+}

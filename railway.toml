@@ -1,0 +1,12 @@
+[build]
+# Install all workspace dependencies, build libs, the frontend, and the API server
+builder = "nixpacks"
+buildCommand = "pnpm install --frozen-lockfile && pnpm run build"
+
+[deploy]
+# The API server serves the pre-built frontend in production
+startCommand = "node --enable-source-maps artifacts/api-server/dist/index.mjs"
+healthcheckPath = "/api/content"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
