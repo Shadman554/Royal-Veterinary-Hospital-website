@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { useLayoutEffect, useState } from "react";
 import {
   ArrowRight,
   Clock3,
@@ -57,6 +58,47 @@ const benefits = [
   [Heart, "Compassionate Care"],
 ] as const;
 
+function HeroHeadline({ first, second, speed }: { first: string; second: string; speed: string }) {
+  const [count, setCount] = useState<number | null>(null);
+  const segment = (text: string) =>
+    typeof Intl.Segmenter === "function"
+      ? Array.from(new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text), (part) => part.segment)
+      : Array.from(text);
+  const firstChars = segment(first);
+  const secondChars = segment(second);
+  const length = firstChars.length + secondChars.length;
+  const delay = Math.min(150, Math.max(20, Number(speed) || 55));
+
+  useLayoutEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setCount(null);
+      return;
+    }
+    setCount(0);
+    let current = 0;
+    const timer = window.setInterval(() => {
+      current += 1;
+      setCount(current);
+      if (current >= length) window.clearInterval(timer);
+    }, delay);
+    return () => window.clearInterval(timer);
+  }, [first, second, length, delay]);
+
+  const firstVisible = count === null ? first : firstChars.slice(0, count).join("");
+  const secondVisible = count === null ? second : secondChars.slice(0, Math.max(0, count - firstChars.length)).join("");
+
+  return (
+    <h1 className="royal-hero-headline" aria-label={`${first} ${second}`}>
+      <span className="royal-hero-headline-reserve" aria-hidden="true">
+        <span>{first}</span><span>{second}</span>
+      </span>
+      <span className="royal-hero-headline-animated" aria-hidden="true">
+        <span>{firstVisible}</span><span>{secondVisible}</span>
+      </span>
+    </h1>
+  );
+}
+
 export function HomePage() {
   const t = useCopy();
   const { settings, PHONE, MAP, services, team, media } = useHospital();
@@ -67,10 +109,7 @@ export function HomePage() {
       {/* 1. HERO SECTION (FIGMA GROUP 2) */}
       <section className="royal-hero">
         <div className="royal-hero-copy">
-          <h1>
-            {settings.heroLine1}
-            <span>{settings.heroLine2}</span>
-          </h1>
+          <HeroHeadline first={settings.heroLine1} second={settings.heroLine2} speed={settings.heroTypingSpeed} />
           <p className="royal-hero-desc">{settings.heroDescription}</p>
           <div className="royal-hero-actions">
             <a href={`tel:${PHONE}`} className="royal-action solid royal-phone-pill">

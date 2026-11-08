@@ -1,4 +1,10 @@
 {
+  "Headline writing speed": "خێرایی نووسینی ناونیشان",
+  "Fast": "خێرا",
+  "Normal": "ئاسایی",
+  "Slow": "هێواش",
+  "Very slow": "زۆر هێواش",
+  "Controls how quickly the homepage headline is written.": "خێرایی نووسینی ناونیشانی پەڕەی سەرەکی دیاری دەکات.",
   "Admin access is unavailable": "چوونەژوورەوەی بەڕێوەبەر بەردەست نییە",
   "Configure a setup key of at least 32 characters on the server.": "لە سێرڤەرەکەدا کلیلی ڕێکخستنێک دابنێ کە لانیکەم ٣٢ پیت بێت.",
   "Try again": "دووبارە هەوڵ بدەوە",

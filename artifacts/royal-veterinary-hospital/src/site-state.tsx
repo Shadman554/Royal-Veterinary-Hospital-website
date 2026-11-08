@@ -71,7 +71,7 @@ const previousImages = {
   ...Object.fromEntries(Array.from({length: 6}, (_, i) => [`featured-${i}`, "royal-services.png"])),
 };
 function normalizeContent(data: SiteContent): SiteContent {
-  const settings = { ...data.settings };
+  const settings = { ...defaultSettings, ...data.settings };
   const media = { ...initialContent.media, ...data.media };
   for (const [key, oldValue] of Object.entries(previousHeroCopy)) {
     const field = key as keyof typeof previousHeroCopy;

@@ -212,6 +212,7 @@ test("Royal API: authentication, booking workflow, content and persistence", asy
           phone: "+9647700000001",
           phoneDisplay: "0770 000 0001",
           heroLine1: "QA persisted heading",
+          heroTypingSpeed: "90",
         };
         const saved = await request("/admin/content/settings", "PUT", {
           value: settings,
@@ -219,6 +220,14 @@ test("Royal API: authentication, booking workflow, content and persistence", asy
           version: content.version,
         });
         assert.equal(saved.response.status, 200);
+        assert.equal((await request("/content")).data.settings.heroTypingSpeed, "90");
+        assert.equal(
+          (await request("/admin/content/settings", "PUT", {
+            value: { ...settings, heroTypingSpeed: "999" },
+            version: saved.data.version,
+          })).response.status,
+          400,
+        );
         assert.equal((await request("/content")).data.copy["ckb::QA persisted heading"], "سەردێڕی نوێ");
         assert.equal(
           (await request("/content")).data.settings.heroLine1,

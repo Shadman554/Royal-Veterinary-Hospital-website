@@ -154,10 +154,16 @@
   margin: 0;
 }
 
-.royal-hero h1 span {
+.royal-hero-headline > span,
+.royal-hero-headline > span > span {
   display: block;
+}
+.royal-hero-headline > span > span:last-child {
   color: var(--green);
 }
+.royal-hero-headline { position: relative; }
+.royal-hero-headline-reserve { visibility: hidden; }
+.royal-hero-headline-animated { position: absolute; inset: 0; }
 
 .royal-hero-desc {
   font-size: clamp(15px, 1.55vw, 21px);

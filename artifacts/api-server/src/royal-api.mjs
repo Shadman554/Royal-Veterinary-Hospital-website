@@ -124,6 +124,7 @@ export function createRoyalApi({
     return {
       ...catalog,
       ...saved,
+      settings: { ...catalog.settings, ...saved.settings },
       copy: { ...catalog.copy, ...saved.copy },
       media: { ...catalog.media, ...saved.media },
       version: row?.version || 1,
@@ -590,9 +591,11 @@ export function createRoyalApi({
       clean = Object.fromEntries(
         Object.keys(catalog.settings).map((key) => [
           key,
-          str(value?.[key], key, key === "heroDescription" ? 600 : 160),
+          str(value?.[key] ?? (key === "heroTypingSpeed" ? current.settings.heroTypingSpeed : undefined), key, key === "heroDescription" ? 600 : 160),
         ]),
       );
+      if (!/^(?:[2-9]\d|1[0-4]\d|150)$/.test(clean.heroTypingSpeed))
+        fail("Headline speed must be between 20 and 150 milliseconds.");
       if (!/^\+[1-9]\d{7,14}$/.test(clean.phone))
         fail("Phone must include a country code, for example +9647701234567.");
     } else if (section === "services") {

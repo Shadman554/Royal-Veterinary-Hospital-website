@@ -1699,6 +1699,23 @@ function ContentEditor({
                         key === "heroDescription",
                       ),
                     )}
+                    {title === "Homepage banner" && (
+                      <label>
+                        {t("Headline writing speed")}
+                        <select
+                          value={draft.settings.heroTypingSpeed}
+                          onChange={(e) => change((next) => {
+                            next.settings.heroTypingSpeed = e.target.value;
+                          })}
+                        >
+                          <option value="30">{t("Fast")}</option>
+                          <option value="55">{t("Normal")}</option>
+                          <option value="90">{t("Slow")}</option>
+                          <option value="130">{t("Very slow")}</option>
+                        </select>
+                        <small className="admin-hint">{t("Controls how quickly the homepage headline is written.")}</small>
+                      </label>
+                    )}
                   </section>
                 ))}
               </div>
