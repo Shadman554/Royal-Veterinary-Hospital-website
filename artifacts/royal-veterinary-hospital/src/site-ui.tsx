@@ -259,7 +259,7 @@ export function Footer() {
               <bdi>{settings.phoneDisplay}</bdi>
             </a>
             <Link href="/appointment" className="royal-action royal-appoint-pill">
-              <img src="/rvh/assets/appointment-calendar.svg" width="16" height="16" alt="" aria-hidden="true" />
+              <img src="/rvh/assets/appointment-calendar.svg" width="22" height="22" alt="" aria-hidden="true" />
               <span>{t("Appointment")}</span>
             </Link>
           </div>

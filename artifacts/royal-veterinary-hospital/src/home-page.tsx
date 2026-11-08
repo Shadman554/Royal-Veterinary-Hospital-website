@@ -80,7 +80,7 @@ export function HomePage() {
               <bdi>{settings.phoneDisplay}</bdi>
             </a>
             <Link href="/appointment" className="royal-action royal-appoint-pill">
-              <img src="/rvh/assets/appointment-calendar.svg" width="18" height="18" alt="" aria-hidden="true" />
+              <img src="/rvh/assets/appointment-calendar.svg" width="26" height="26" alt="" aria-hidden="true" />
               <span>{t("Appointment")}</span>
             </Link>
           </div>
