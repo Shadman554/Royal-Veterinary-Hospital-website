@@ -11,7 +11,6 @@ import {
   MapPin,
   HeartPulse,
   MessageCircle,
-  CalendarDays,
 } from "lucide-react";
 import { useHospital, useSite } from "./site-state";
 import { LanguageSwitch } from "./language";
@@ -260,7 +259,7 @@ export function Footer() {
               <bdi>{settings.phoneDisplay}</bdi>
             </a>
             <Link href="/appointment" className="royal-action royal-appoint-pill">
-              <CalendarDays size={16} />
+              <img src="/rvh/assets/appointment-calendar.svg" width="16" height="16" alt="" aria-hidden="true" />
               <span>{t("Appointment")}</span>
             </Link>
           </div>

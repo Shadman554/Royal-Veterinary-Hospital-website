@@ -1,7 +1,6 @@
 import { Link } from "wouter";
 import {
   ArrowRight,
-  CalendarDays,
   Clock3,
   Heart,
   Hospital,
@@ -81,7 +80,7 @@ export function HomePage() {
               <bdi>{settings.phoneDisplay}</bdi>
             </a>
             <Link href="/appointment" className="royal-action royal-appoint-pill">
-              <CalendarDays size={18} />
+              <img src="/rvh/assets/appointment-calendar.svg" width="18" height="18" alt="" aria-hidden="true" />
               <span>{t("Appointment")}</span>
             </Link>
           </div>
