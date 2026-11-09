@@ -1521,6 +1521,7 @@ function ContentEditor({
                           type="button"
                           className={`${selected === s.slug ? "active" : ""} ${s.hidden ? "is-hidden" : ""}`}
                           key={s.slug}
+                          aria-pressed={selected === s.slug}
                           onClick={() => setSelected(s.slug)}
                         >
                           <SiteImage src={assetUrl(s.icon)} alt="" />
