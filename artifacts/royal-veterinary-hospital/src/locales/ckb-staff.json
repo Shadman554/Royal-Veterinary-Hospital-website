@@ -1,4 +1,7 @@
 {
+  "Homepage services": "خزمەتگوزارییەکانی پەڕەی سەرەکی",
+  "Number of service cards": "ژمارەی کارتەکانی خزمەتگوزاری",
+  "Shows up to this many featured services on the homepage. Hidden services are not shown.": "تا ئەم ژمارەیە خزمەتگوزاریی دیاریکراو لە پەڕەی سەرەکی پیشان دەدرێت. خزمەتگوزارییە شاراوەکان پیشان نادرێن.",
   "Headline writing speed": "خێرایی نووسینی ناونیشان",
   "Fast": "خێرا",
   "Normal": "ئاسایی",

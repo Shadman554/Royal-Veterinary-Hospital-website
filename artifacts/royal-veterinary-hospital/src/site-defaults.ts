@@ -7,6 +7,7 @@ export const defaultSettings = {
   routineHours: "Saturday–Thursday · 8:30 am–9:00 pm",
   fridayHours: "Friday · 10:00 am–7:00 pm",
   heroTypingSpeed: "55",
+  homepageServiceCount: "5",
   heroLine1: "Quality",
   heroLine2: "Always First.",
   heroDescription: "Professional veterinary care with compassion, safety, and high standards.",

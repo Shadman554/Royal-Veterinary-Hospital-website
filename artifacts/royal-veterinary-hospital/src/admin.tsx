@@ -1719,6 +1719,23 @@ function ContentEditor({
                     )}
                   </section>
                 ))}
+                <section>
+                  <h2>{t("Homepage services")}</h2>
+                  <label>
+                    {t("Number of service cards")}
+                    <select
+                      value={draft.settings.homepageServiceCount}
+                      onChange={(e) => change((next) => {
+                        next.settings.homepageServiceCount = e.target.value;
+                      })}
+                    >
+                      {[1, 2, 3, 4, 5].map((count) => (
+                        <option key={count} value={String(count)}>{count}</option>
+                      ))}
+                    </select>
+                    <small className="admin-hint">{t("Shows up to this many featured services on the homepage. Hidden services are not shown.")}</small>
+                  </label>
+                </section>
               </div>
             ) : section === "plans" ? (
               <div>
