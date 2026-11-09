@@ -8,6 +8,10 @@
   ],
   "Services": [],
   "About": [
+    "Dedicated To Pet Health & Happiness",
+    "Royal Veterinary Hospital provides compassionate, high-standard veterinary care in Sulaymaniyah. Our multidisciplinary team and modern clinic environment ensure every pet receives the attention and expertise they deserve.",
+    "Meet Our Team",
+    "Royal Veterinary Hospital. A familiar place for pets and the people who love them in {city}.",
     "Royal Veterinary Hospital entrance",
     "At Royal Veterinary Hospital, we bring thoughtful veterinary medicine and a personal approach together. We listen first, explain clearly, and make time for the little things that help your pet feel safe."
   ],
@@ -23,6 +27,7 @@
     "A lot more care."
   ],
   "Packages": [
+    "Good care. Made simpler.",
     "PLAN FOR MORE HAPPY YEARS",
     "Good care.",
     "Made simpler.",
@@ -45,6 +50,7 @@
     "Royal Veterinary Hospital"
   ],
   "Header": [
+    "Hospital",
     "Home",
     "Services",
     "Packages",
@@ -292,6 +298,10 @@
   ],
   "Kurdish · Services": [],
   "Kurdish · About": [
+    "ckb::Dedicated To Pet Health & Happiness",
+    "ckb::Royal Veterinary Hospital provides compassionate, high-standard veterinary care in Sulaymaniyah. Our multidisciplinary team and modern clinic environment ensure every pet receives the attention and expertise they deserve.",
+    "ckb::Meet Our Team",
+    "ckb::Royal Veterinary Hospital. A familiar place for pets and the people who love them in {city}.",
     "ckb::Royal Veterinary Hospital entrance",
     "ckb::At Royal Veterinary Hospital, we bring thoughtful veterinary medicine and a personal approach together. We listen first, explain clearly, and make time for the little things that help your pet feel safe."
   ],
@@ -307,6 +317,7 @@
     "ckb::A lot more care."
   ],
   "Kurdish · Packages": [
+    "ckb::Good care. Made simpler.",
     "ckb::PLAN FOR MORE HAPPY YEARS",
     "ckb::Good care.",
     "ckb::Made simpler.",
@@ -329,6 +340,7 @@
     "ckb::Royal Veterinary Hospital"
   ],
   "Kurdish · Header": [
+    "ckb::Hospital",
     "ckb::Home",
     "ckb::Services",
     "ckb::Packages",

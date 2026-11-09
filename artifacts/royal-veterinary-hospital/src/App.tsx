@@ -172,7 +172,7 @@ function Content() {
                   <span>{t("Right here at home.")}</span>
                 </>
               }
-              description={`Royal Veterinary Hospital. A familiar place for pets and the people who love them in ${settings.city}.`}
+              description={t("Royal Veterinary Hospital. A familiar place for pets and the people who love them in {city}.").replace("{city}", settings.city)}
             />
             <About full />
             <RoyalWave className="royal-wave section-wave flip-wave" />
