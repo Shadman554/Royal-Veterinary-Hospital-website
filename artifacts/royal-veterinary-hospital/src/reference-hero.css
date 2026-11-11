@@ -497,6 +497,12 @@
 
 .royal-card-photo { display: none; }
 
+.royal-service-icon {
+  width: clamp(48px, 4.5vw, 72px);
+  height: clamp(48px, 4.5vw, 72px);
+  object-fit: contain;
+}
+
 .royal-card-pill-icon {
   width: clamp(36px, 4vw, 60px);
   height: clamp(36px, 4vw, 60px);

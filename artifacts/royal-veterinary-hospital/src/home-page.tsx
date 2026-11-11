@@ -6,11 +6,7 @@ import {
   Heart,
   Hospital,
   MapPin,
-  Monitor,
   Phone,
-  Scissors,
-  Stethoscope,
-  Syringe,
   UsersRound,
 } from "lucide-react";
 import { featuredServices } from "./content";
@@ -19,38 +15,20 @@ import { useHospital, useSite } from "./site-state";
 import { assetUrl, SiteImage, useCopy } from "./website-content";
 import { RoyalCurvedPhoto } from "./RoyalCurvedPhoto";
 import { RoyalWave } from "./RoyalWave";
-import { servicePhotoStyle } from "./media-display";
 import { FAQ } from "./sections";
 import { OrderedPage, OrderedSection } from "./OrderedSection";
 import { optimizedImageUrl } from "./image-performance";
 
-function Tooth() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="24"
-      height="24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      aria-hidden="true"
-    >
-      <path d="M12 4c-3-2-8-2-9 3-.6 3 1.2 5 2.3 10 .5 2.4 1.2 4 2.5 4 2.2 0 1.5-8 4.2-8s2 8 4.2 8c1.3 0 2-1.6 2.5-4C19.8 12 21.6 10 21 7c-1-5-6-5-9-3Z" />
-    </svg>
-  );
-}
-
 const cards = [
-  ["Consultation", "Comprehensive health check for your pets", Stethoscope],
+  ["Consultation", "Comprehensive health check for your pets"],
   [
     "Vaccination",
     "Core and lifestyle vaccines for long-term protection",
-    Syringe,
   ],
-  ["Surgery", "Safe procedures with modern equipment", Scissors],
-  ["Dental Care", "Cleaner teeth, healthier pets", Tooth],
-  ["Grooming", "Professional grooming for cleanliness and comfort", Scissors],
-  ["Diagnostics", "X-ray, ultrasound, and laboratory services", Monitor],
+  ["Surgery", "Safe procedures with modern equipment"],
+  ["Dental Care", "Cleaner teeth, healthier pets"],
+  ["Grooming", "Professional grooming for cleanliness and comfort"],
+  ["Diagnostics", "X-ray, ultrasound, and laboratory services"],
 ] as const;
 
 const benefits = [
@@ -185,8 +163,7 @@ export function HomePage() {
               const original = defaultServices.find(
                 (item) => item.slug === slug,
               );
-              const [title, description, Icon] = cards[i] ?? [service.title, service.short, Stethoscope];
-              const entry = i >= 0 ? media[`featured-${i}`] : undefined;
+              const [title, description] = cards[i] ?? [service.title, service.short];
               return (
                 <Link
                   className="royal-card"
@@ -194,9 +171,7 @@ export function HomePage() {
                   href={`/service-${slug}`}
                 >
                   <div className="royal-card-visual">
-                    {entry ? <div className="royal-card-photo" style={servicePhotoStyle(i, entry.src)} aria-hidden="true" /> :
-                      <SiteImage src={assetUrl(service.icon)} alt="" style={{ width: "64px", height: "64px", objectFit: "contain", margin: "auto" }} />}
-                    <Icon className="royal-card-pill-icon" />
+                    <SiteImage className="royal-service-icon" src={assetUrl(service.icon)} alt="" loading="lazy" />
                   </div>
                   <div className="royal-card-content">
                     <h3>

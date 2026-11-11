@@ -15,8 +15,7 @@ import {
   HeartPulse,
   Clock3,
 } from "lucide-react";
-import { ASSETS, PHONE, featuredServices } from "./content";
-import { servicePhotoStyle } from "./media-display";
+import { ASSETS, PHONE } from "./content";
 import {
   categories,
   services,
@@ -29,19 +28,10 @@ import { useHospital } from "./site-state";
 import { OrderedPage, OrderedSection } from "./OrderedSection";
 
 function CareCard({ service }: { service: Service }) {
-  const t = useCopy();
-  const { media } = useHospital();
-  const index = featuredServices.findIndex((item) => item.slug === service.slug);
-  const photo = index >= 0 ? media[`featured-${index}`] : undefined;
-
   return (
     <Link href={`/service-${service.slug}`} className="royal-card care-card-royal">
       <div className="royal-card-visual">
-        {photo ? (
-          <div className="care-card-photo" style={servicePhotoStyle(index, photo.src)} aria-hidden="true" />
-        ) : (
-          <SiteImage src={assetUrl(service.icon)} alt="" loading="lazy" style={{ width: "64px", height: "64px", objectFit: "contain" }} />
-        )}
+        <SiteImage src={assetUrl(service.icon)} alt="" loading="lazy" />
       </div>
       <h3>{service.title}</h3>
       <p>{service.short}</p>
