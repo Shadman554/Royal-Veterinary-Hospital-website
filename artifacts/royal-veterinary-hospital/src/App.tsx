@@ -20,6 +20,7 @@ import { HomePage } from "./home-page";
 import { ServiceDetail, ServiceDirectory } from "./service-experience";
 import { useLanguage } from "./language";
 import { RoyalWave } from "./RoyalWave";
+import { OrderedPage, OrderedSection } from "./OrderedSection";
 
 function DocumentLanguage() {
   const { language } = useLanguage();
@@ -35,7 +36,7 @@ function DocumentLanguage() {
 function Content() {
   const t = useCopy();
 
-  const { services, settings } = useHospital();
+  const { services, settings, sections } = useHospital();
   const [location] = useLocation();
   const main = useRef<HTMLElement>(null);
   const previousLocation = useRef(location);
@@ -110,7 +111,7 @@ function Content() {
           <HomePage />
         </Route>
         <Route path="/services">
-          <ServiceDirectory />
+          {sections.pageServices ? <ServiceDirectory /> : <NotFound />}
         </Route>
         {services.map((service) => (
           <Route key={service.slug} path={`/service-${service.slug}`}>
@@ -118,8 +119,8 @@ function Content() {
           </Route>
         ))}
         <Route path="/packages">
-          <div className="royal-home">
-            <PageIntro
+          {sections.pagePackages ? <OrderedPage>
+            {sections.plansIntro && <OrderedSection id="plansIntro"><PageIntro
               eyebrow={t("CARE PACKAGES")}
               title={
                 <>
@@ -131,19 +132,19 @@ function Content() {
               description={t(
                 "Care plans built around life’s little beginnings, everyday adventures and golden years.",
               )}
-            />
-            <Packages full />
-            <RoyalWave className="royal-wave section-wave" />
-            <CareJourney />
-            <RoyalWave className="royal-wave section-wave" />
+            /></OrderedSection>}
+            {sections.plansList && <OrderedSection id="plansList"><Packages full /></OrderedSection>}
+            {sections.plansJourney && <OrderedSection id="plansJourney"><RoyalWave className="royal-wave section-wave" />
+            <CareJourney /></OrderedSection>}
+            {sections.plansFaq && <OrderedSection id="plansFaq"><RoyalWave className="royal-wave section-wave" />
             <div className="royal-body">
               <FAQ />
-            </div>
-          </div>
+            </div></OrderedSection>}
+          </OrderedPage> : <NotFound />}
         </Route>
         <Route path="/team">
-          <div className="royal-home">
-            <PageIntro
+          {sections.pageTeam ? <OrderedPage>
+            {sections.teamIntro && <OrderedSection id="teamIntro"><PageIntro
               eyebrow={t("THE ROYAL TEAM")}
               title={
                 <>
@@ -155,15 +156,15 @@ function Content() {
               description={t(
                 "Get to know the people who care for your companion. A team of different specialties, brought together by a love of animals.",
               )}
-            />
-            <Team full />
-            <RoyalWave className="royal-wave section-wave" />
-            <Visit />
-          </div>
+            /></OrderedSection>}
+            {sections.teamMembers && <OrderedSection id="teamMembers"><Team full /></OrderedSection>}
+            {sections.teamVisit && <OrderedSection id="teamVisit"><RoyalWave className="royal-wave section-wave" />
+            <Visit /></OrderedSection>}
+          </OrderedPage> : <NotFound />}
         </Route>
         <Route path="/about">
-          <div className="royal-home">
-            <PageIntro
+          {sections.pageAbout ? <OrderedPage>
+            {sections.aboutIntro && <OrderedSection id="aboutIntro"><PageIntro
               eyebrow={t("OUR STORY")}
               title={
                 <>
@@ -173,20 +174,20 @@ function Content() {
                 </>
               }
               description={t("Royal Veterinary Hospital. A familiar place for pets and the people who love them in {city}.").replace("{city}", settings.city)}
-            />
-            <About full />
-            <RoyalWave className="royal-wave section-wave flip-wave" />
-            <Team />
-            <RoyalWave className="royal-wave section-wave" />
-            <Visit />
-          </div>
+            /></OrderedSection>}
+            {sections.aboutStory && <OrderedSection id="aboutStory"><About full /></OrderedSection>}
+            {sections.aboutTeam && <OrderedSection id="aboutTeam"><RoyalWave className="royal-wave section-wave flip-wave" />
+            <Team /></OrderedSection>}
+            {sections.aboutVisit && <OrderedSection id="aboutVisit"><RoyalWave className="royal-wave section-wave" />
+            <Visit /></OrderedSection>}
+          </OrderedPage> : <NotFound />}
         </Route>
         <Route path="/facilities">
-          <Facilities />
+          {sections.pageFacilities ? <Facilities /> : <NotFound />}
         </Route>
         <Route path="/contact">
-          <div className="royal-home">
-            <PageIntro
+          {sections.pageContact ? <OrderedPage>
+            {sections.contactIntro && <OrderedSection id="contactIntro"><PageIntro
               eyebrow={t("COME SAY HELLO")}
               title={
                 <>
@@ -198,13 +199,13 @@ function Content() {
               description={t(
                 "Call, message, or come in. Our team is here for you and your companion.",
               )}
-            />
-            <Visit full />
-            <RoyalWave className="royal-wave section-wave" />
+            /></OrderedSection>}
+            {sections.contactVisit && <OrderedSection id="contactVisit"><Visit full /></OrderedSection>}
+            {sections.contactFaq && <OrderedSection id="contactFaq"><RoyalWave className="royal-wave section-wave" />
             <div className="royal-body">
               <FAQ />
-            </div>
-          </div>
+            </div></OrderedSection>}
+          </OrderedPage> : <NotFound />}
         </Route>
         <Route path="/appointment">
           <Appointment />

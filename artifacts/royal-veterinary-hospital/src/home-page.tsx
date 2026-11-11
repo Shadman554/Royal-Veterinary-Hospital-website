@@ -21,6 +21,8 @@ import { RoyalCurvedPhoto } from "./RoyalCurvedPhoto";
 import { RoyalWave } from "./RoyalWave";
 import { servicePhotoStyle } from "./media-display";
 import { FAQ } from "./sections";
+import { OrderedPage, OrderedSection } from "./OrderedSection";
+import { optimizedImageUrl } from "./image-performance";
 
 function Tooth() {
   return (
@@ -103,11 +105,12 @@ export function HomePage() {
   const t = useCopy();
   const { settings, PHONE, MAP, services, team, media } = useHospital();
   const { content } = useSite();
+  const { sections } = content;
 
   return (
-    <div className="royal-home">
+    <OrderedPage>
       {/* 1. HERO SECTION (FIGMA GROUP 2) */}
-      <section className="royal-hero">
+      {sections.homeHero && <OrderedSection id="homeHero"><section className="royal-hero">
         <div className="royal-hero-copy">
           <HeroHeadline first={settings.heroLine1} second={settings.heroLine2} speed={settings.heroTypingSpeed} />
           <p className="royal-hero-desc">{settings.heroDescription}</p>
@@ -132,9 +135,9 @@ export function HomePage() {
             className="royal-hero-circles-bg"
           />
           <picture>
-            <source media="(max-width: 760px)" srcSet={media.heroMobile.src} />
+            <source media="(max-width: 760px)" srcSet={optimizedImageUrl(media.heroMobile.src)} />
             <img
-              src={media.heroDesktop.src}
+              src={optimizedImageUrl(media.heroDesktop.src)}
               alt=""
               className="royal-hero-companions-img"
               fetchPriority="high"
@@ -144,9 +147,9 @@ export function HomePage() {
       </section>
 
       {/* Hero bottom green wave */}
-      <RoyalWave className="royal-wave hero-wave" />
+      <RoyalWave className="royal-wave hero-wave" /></OrderedSection>}
 
-      <div className="royal-body">
+      {sections.homeBenefits && <OrderedSection id="homeBenefits"><div className="royal-body">
         {/* 2. BENEFITS / PERKS */}
         <div className="royal-benefits">
           {benefits.map(([Icon, label]) => (
@@ -156,18 +159,19 @@ export function HomePage() {
             </div>
           ))}
         </div>
+      </div></OrderedSection>}
 
         {/* 3. OUR SERVICES SECTION */}
-        <section className="royal-services" id="services">
+      {sections.homeServices && <OrderedSection id="homeServices"><div className="royal-body"><section className="royal-services" id="services">
           <div className="royal-heading">
             <span>{t("Our Services")}</span>
             <h2>
-              <Link href="/services">{t("Comprehensive Veterinary Care")}</Link>
+              {sections.pageServices ? <Link href="/services">{t("Comprehensive Veterinary Care")}</Link> : t("Comprehensive Veterinary Care")}
             </h2>
           </div>
           <div className="royal-cards">
-            {featuredServices.slice(0, 5)
-              .map((item, index) => ({ ...item, index }))
+            {content.homepageServices
+              .map((slug) => ({ slug, index: featuredServices.findIndex((item) => item.slug === slug) }))
               .filter(({ slug }) => services.some((item) => item.slug === slug && !item.hidden))
               .slice(0, Math.max(1, Math.min(5, Number(settings.homepageServiceCount) || 5)))
               .map(({ slug, index: i }) => {
@@ -181,8 +185,8 @@ export function HomePage() {
               const original = defaultServices.find(
                 (item) => item.slug === slug,
               );
-              const [title, description, Icon] = cards[i];
-              const entry = media[`featured-${i}`] || { src: "/rvh/assets/royal-services.png" };
+              const [title, description, Icon] = cards[i] ?? [service.title, service.short, Stethoscope];
+              const entry = i >= 0 ? media[`featured-${i}`] : undefined;
               return (
                 <Link
                   className="royal-card"
@@ -190,7 +194,8 @@ export function HomePage() {
                   href={`/service-${slug}`}
                 >
                   <div className="royal-card-visual">
-                    <div className="royal-card-photo" style={servicePhotoStyle(i, entry.src)} aria-hidden="true" />
+                    {entry ? <div className="royal-card-photo" style={servicePhotoStyle(i, entry.src)} aria-hidden="true" /> :
+                      <SiteImage src={assetUrl(service.icon)} alt="" style={{ width: "64px", height: "64px", objectFit: "contain", margin: "auto" }} />}
                     <Icon className="royal-card-pill-icon" />
                   </div>
                   <div className="royal-card-content">
@@ -212,16 +217,15 @@ export function HomePage() {
               );
             })}
           </div>
-          <div className="royal-services-more">
+          {sections.pageServices && <div className="royal-services-more">
             <Link href="/services" className="royal-action royal-appoint-pill">
               {t("Show all services")} <ArrowRight size={17} />
             </Link>
-          </div>
-        </section>
-      </div>
+          </div>}
+        </section></div></OrderedSection>}
 
       {/* Wave divider after services */}
-      <RoyalWave className="royal-wave section-wave" />
+      {sections.homeAbout && <OrderedSection id="homeAbout"><RoyalWave className="royal-wave section-wave" />
 
       <div className="royal-body">
         {/* 4. ABOUT US SECTION */}
@@ -234,9 +238,9 @@ export function HomePage() {
                 "At Royal Veterinary Hospital, we are committed to providing high-quality veterinary care with modern facilities, advanced equipment, and a compassionate team you can trust.",
               )}
             </p>
-            <Link className="royal-action solid" href="/about">
+            {sections.pageAbout && <Link className="royal-action solid" href="/about">
               <span>{t("Our Story")}</span> <ArrowRight size={16} />
-            </Link>
+            </Link>}
           </div>
           <div className="royal-feature-visual">
             <RoyalCurvedPhoto
@@ -246,10 +250,10 @@ export function HomePage() {
             />
           </div>
         </section>
-      </div>
+      </div></OrderedSection>}
 
       {/* Wave divider before team */}
-      <RoyalWave className="royal-wave section-wave flip-wave" />
+      {sections.homeTeam && <OrderedSection id="homeTeam"><RoyalWave className="royal-wave section-wave flip-wave" />
 
       <div className="royal-body">
         {/* 5. OUR TEAM SECTION */}
@@ -257,7 +261,7 @@ export function HomePage() {
           <div className="royal-heading">
             <span>{t("Our Team")}</span>
             <h2>
-              <Link href="/team">{t("Experienced Veterinarians")}</Link>
+              {sections.pageTeam ? <Link href="/team">{t("Experienced Veterinarians")}</Link> : t("Experienced Veterinarians")}
             </h2>
           </div>
           <div className="royal-roster">
@@ -281,10 +285,10 @@ export function HomePage() {
             ))}
           </div>
         </section>
-      </div>
+      </div></OrderedSection>}
 
       {/* Wave divider before visit */}
-      <RoyalWave className="royal-wave section-wave" />
+      {sections.homeVisit && <OrderedSection id="homeVisit"><RoyalWave className="royal-wave section-wave" />
 
       <div className="royal-body">
         {/* 6. VISIT US SECTION */}
@@ -326,15 +330,15 @@ export function HomePage() {
             </a>
           </div>
         </section>
-      </div>
+      </div></OrderedSection>}
 
       {/* Wave divider before FAQ */}
-      <RoyalWave className="royal-wave section-wave" />
+      {sections.homeFaq && <OrderedSection id="homeFaq"><RoyalWave className="royal-wave section-wave" />
 
       <div className="royal-body">
         {/* 7. FREQUENTLY ASKED QUESTIONS */}
         <FAQ />
-      </div>
-    </div>
+      </div></OrderedSection>}
+    </OrderedPage>
   );
 }

@@ -1,4 +1,5 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { optimizedImageUrl } from './image-performance';
 
 /**
  * Exact curved-frame geometry extracted from your Group 2.svg.
@@ -16,10 +17,27 @@ const PHOTO_PATH = "M998.276 1994.85C1134.62 1977.19 1589.28 1994.85 1589.28 199
 
 export function RoyalCurvedPhoto({ src, alt, className = '' }: RoyalCurvedPhotoProps) {
   const uid = useId().replace(/[^A-Za-z0-9_-]/g, '_');
+  const frame = useRef<SVGSVGElement>(null);
+  const [nearViewport, setNearViewport] = useState(false);
+  useEffect(() => {
+    if (!("IntersectionObserver" in window)) {
+      setNearViewport(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setNearViewport(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: "600px" });
+    if (frame.current) observer.observe(frame.current);
+    return () => observer.disconnect();
+  }, []);
   const clipId = `royal-photo-${uid}`;
   const gradientId = `royal-green-${uid}`;
   return (
     <svg
+      ref={frame}
       className={className}
       viewBox="695 1985 950 390"
       width="100%"
@@ -39,7 +57,7 @@ export function RoyalCurvedPhoto({ src, alt, className = '' }: RoyalCurvedPhotoP
       <g clipPath={`url(#${clipId})`}>
         <image
           className="royal-curved-frame-image"
-          href={src}
+          href={nearViewport ? optimizedImageUrl(src) : undefined}
           x="753" y="1982" width="889" height="389"
           preserveAspectRatio="xMidYMid slice"
         />

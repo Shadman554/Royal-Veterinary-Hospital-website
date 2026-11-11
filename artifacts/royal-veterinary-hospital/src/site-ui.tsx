@@ -71,11 +71,12 @@ export function SectionHead({
   );
 }
 const primaryNavigation = [
-  ["/", "Home"], ["/services", "Services"], ["/team", "Our Team"],
-  ["/about", "About Us"], ["/contact", "Contact"],
-];
+  ["/", "Home", "navHome", null], ["/services", "Services", "navServices", "pageServices"], ["/team", "Our Team", "navTeam", "pageTeam"],
+  ["/about", "About Us", "navAbout", "pageAbout"], ["/contact", "Contact", "navContact", "pageContact"],
+] as const;
 export function Header() {
   const t = useCopy();
+  const { sections } = useSite().content;
 
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
@@ -92,7 +93,7 @@ export function Header() {
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
   }, [open]);
-  const links = primaryNavigation.map(([href, label]) => [href, t(label)]);
+  const links = primaryNavigation.filter(([, , key, page]) => sections[key] !== false && (!page || sections[page] !== false)).map(([href, label]) => [href, t(label)]);
   return (
     <>
       <a className="skip-link" href="#main">
@@ -160,7 +161,7 @@ export function Header() {
               <ArrowUpRight size={18} />
             </Link>
           ))}
-          <Link href="/packages">{t("Packages")}</Link>
+          {sections.navPackages && sections.pagePackages && <Link href="/packages">{t("Packages")}</Link>}
           <BookLink />
         </nav>
       </header>
@@ -198,6 +199,7 @@ export function PageIntro({
 }
 export function Footer() {
   const t = useCopy();
+  const { sections } = useSite().content;
   const { PHONE, settings } = useHospital();
 
   return (
@@ -223,17 +225,17 @@ export function Footer() {
         <div className="footer-soft-col">
           <span className="footer-soft-heading">{t("Hospital")}</span>
           <nav className="footer-soft-links">
-            <Link href="/">{t("Home")}</Link>
-            <Link href="/about">{t("About Us")}</Link>
-            <Link href="/team">{t("Our Team")}</Link>
-            <Link href="/facilities">{t("Our facilities")}</Link>
-            <Link href="/packages">{t("Packages")}</Link>
-            <Link href="/contact">{t("Contact")}</Link>
+            {sections.navHome && <Link href="/">{t("Home")}</Link>}
+            {sections.navAbout && sections.pageAbout && <Link href="/about">{t("About Us")}</Link>}
+            {sections.navTeam && sections.pageTeam && <Link href="/team">{t("Our Team")}</Link>}
+            {sections.navFacilities && sections.pageFacilities && <Link href="/facilities">{t("Our facilities")}</Link>}
+            {sections.navPackages && sections.pagePackages && <Link href="/packages">{t("Packages")}</Link>}
+            {sections.navContact && sections.pageContact && <Link href="/contact">{t("Contact")}</Link>}
           </nav>
         </div>
 
         {/* Services */}
-        <div className="footer-soft-col">
+        {sections.navServices && sections.pageServices && <div className="footer-soft-col">
           <span className="footer-soft-heading">{t("Our Services")}</span>
           <nav className="footer-soft-links">
             <Link href="/service-general-care">{t("Consultation")}</Link>
@@ -241,9 +243,9 @@ export function Footer() {
             <Link href="/service-surgery">{t("Surgery")}</Link>
             <Link href="/service-dental-care">{t("Dental Care")}</Link>
             <Link href="/service-grooming">{t("Grooming")}</Link>
-            <Link href="/services">{t("All services")}</Link>
+            {sections.pageServices && <Link href="/services">{t("All services")}</Link>}
           </nav>
-        </div>
+        </div>}
 
         {/* Contact & Figma Pills */}
         <div className="footer-soft-col footer-soft-actions-col">

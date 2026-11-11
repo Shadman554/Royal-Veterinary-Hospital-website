@@ -26,6 +26,7 @@ import {
 import { BookLink, NotFound, PageIntro } from "./site-ui";
 import { RoyalWave } from "./RoyalWave";
 import { useHospital } from "./site-state";
+import { OrderedPage, OrderedSection } from "./OrderedSection";
 
 function CareCard({ service }: { service: Service }) {
   const t = useCopy();
@@ -51,7 +52,7 @@ function CareCard({ service }: { service: Service }) {
 export function ServiceDirectory() {
   const t = useCopy();
 
-  const { services, PHONE, settings, categories, categorySteps } =
+  const { services, PHONE, settings, categories, categorySteps, sections } =
     useHospital();
   const visibleServices = services.filter((service) => !service.hidden);
   const [category, setCategory] = useState(() => {
@@ -82,8 +83,8 @@ export function ServiceDirectory() {
     setQuery("");
   };
   return (
-    <div className="royal-home">
-      <PageIntro
+    <OrderedPage>
+      {sections.servicesIntro && <OrderedSection id="servicesIntro"><PageIntro
         imageKey="directory"
         eyebrow={t("THE WHOLE PICTURE OF CARE")}
         title={
@@ -96,8 +97,8 @@ export function ServiceDirectory() {
         description={t(
           "From a first check-up to complex medical and surgical support. Discover the care that’s right for your companion.",
         )}
-      />
-      <section className="care-directory section" id="care-directory">
+      /></OrderedSection>}
+      {sections.servicesDirectory && <OrderedSection id="servicesDirectory"><section className="care-directory section" id="care-directory">
         <div className="container">
           <div className="directory-heading">
             <div>
@@ -269,8 +270,8 @@ export function ServiceDirectory() {
             </div>
           </div>
         </div>
-      </section>
-      <section className="care-bottom-note">
+      </section></OrderedSection>}
+      {sections.servicesContact && <OrderedSection id="servicesContact"><section className="care-bottom-note">
         <div className="container">
           <div>
             <h2>{t("One conversation.")} {t("A clearer way forward.")}</h2>
@@ -284,15 +285,15 @@ export function ServiceDirectory() {
             <BookLink service="Pet consultation" />
           </div>
         </div>
-      </section>
-    </div>
+      </section></OrderedSection>}
+    </OrderedPage>
   );
 }
 
 export function ServiceDetail({ slug }: { slug: string }) {
   const t = useCopy();
 
-  const { services, PHONE, settings, categories, categorySteps } =
+  const { services, PHONE, settings, categories, categorySteps, sections } =
     useHospital();
   const service = services.find((s) => s.slug === slug);
   if (!service) return <NotFound />;
@@ -309,8 +310,8 @@ export function ServiceDetail({ slug }: { slug: string }) {
           <div className="breadcrumbs">
             <Link href="/">{t("Home")}</Link>
             <span>/</span>
-            <Link href="/services">{t("Our services")}</Link>
-            <span>/</span>
+            {sections.pageServices && <><Link href="/services">{t("Our services")}</Link>
+            <span>/</span></>}
             <span>{service.title}</span>
           </div>
           <div className="care-detail-heading">
@@ -475,10 +476,10 @@ export function ServiceDetail({ slug }: { slug: string }) {
                 "This guide explains the service in general. Your pet’s examination and individual needs determine the advice, tests and treatment recommended.",
               )}
             </p>
-            <Link href="/services" className="text-link">
+            {sections.pageServices && <Link href="/services" className="text-link">
               <ArrowLeft size={16} />
               {t("Back to all services")}
-            </Link>
+            </Link>}
           </article>
           <aside className="care-guide-aside">
             <div className="care-booking-card">
@@ -540,10 +541,10 @@ export function ServiceDetail({ slug }: { slug: string }) {
               <span className="eyebrow">{t("CONNECTED CARE")}</span>
               <h2>{t("You might also explore")}</h2>
             </div>
-            <Link href="/services" className="text-link">
+            {sections.pageServices && <Link href="/services" className="text-link">
               {t("All services")}
               <ArrowRight size={17} />
-            </Link>
+            </Link>}
           </div>
           <div className="care-card-grid">
             {related.map((s) => (

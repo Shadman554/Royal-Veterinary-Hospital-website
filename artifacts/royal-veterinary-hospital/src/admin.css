@@ -28,6 +28,30 @@
   color: var(--green);
 }
 .admin-loading p { max-width: 42ch; }
+.admin-section-settings .admin-section-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding: 10px 0;
+  margin: 0;
+  border-bottom: 1px solid var(--admin-border);
+}
+.admin-section-settings .admin-section-toggle input {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  flex: none;
+  accent-color: #348d45;
+}
+.staff-setting-groups.admin-section-settings section { gap: 0; }
+.staff-setting-groups.admin-section-settings h2 { margin-bottom: 8px; }
+.admin-section-order-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 54px; border-bottom: 1px solid var(--admin-border); }
+.admin-section-order-row > div { display: flex; gap: 6px; }
+.admin-section-order-row button { width: 40px; height: 40px; border: 1px solid var(--admin-border); border-radius: 8px; font-size: 20px; }
+.admin-section-order-row button:disabled { opacity: .35; cursor: default; }
 .admin-loading h1 { margin: 0; font-size: clamp(24px, 4vw, 32px); }
 .admin-auth {
   display: grid;

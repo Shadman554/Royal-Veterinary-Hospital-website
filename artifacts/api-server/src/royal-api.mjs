@@ -14,8 +14,11 @@ import {
   unlinkSync,
 } from "node:fs";
 import path from "node:path";
+import { gzip } from "node:zlib";
+import { promisify } from "node:util";
 import catalog from "./catalog.json" with { type: "json" };
 const statuses = ["new", "contacted", "confirmed", "completed", "cancelled"];
+const gzipAsync = promisify(gzip);
 const digest = (value) => createHash("sha256").update(value).digest("hex");
 const hashPassword = (password, salt = randomBytes(16).toString("hex")) =>
   `${salt}:${scryptSync(password, salt, 64).toString("hex")}`;
@@ -125,6 +128,8 @@ export function createRoyalApi({
       ...catalog,
       ...saved,
       settings: { ...catalog.settings, ...saved.settings },
+      sections: { ...catalog.sections, ...saved.sections },
+      sectionOrder: { ...catalog.sectionOrder, ...saved.sectionOrder },
       copy: { ...catalog.copy, ...saved.copy },
       media: { ...catalog.media, ...saved.media },
       version: row?.version || 1,
@@ -302,7 +307,19 @@ export function createRoyalApi({
       res.status(201).json({ src: `/api/media/${filename}` });
     },
   );
-  api.get("/content", async (_req, res) => res.json(await getContent()));
+  let compressedContent;
+  api.get("/content", async (req, res) => {
+    const content = await getContent();
+    res.vary("Accept-Encoding");
+    if (req.get("Accept-Encoding") && req.acceptsEncodings("gzip")) {
+      if (compressedContent?.version !== content.version) {
+        compressedContent = { version: content.version, bytes: await gzipAsync(JSON.stringify(content)) };
+      }
+      res.type("application/json").set("Content-Encoding", "gzip");
+      return res.send(compressedContent.bytes);
+    }
+    return res.json(content);
+  });
   api.get("/admin/setup-status", async (_req, res) => {
     await bootstrapReady;
     const required = !(await db.prepare("SELECT id FROM admins LIMIT 1").get());
@@ -521,6 +538,9 @@ export function createRoyalApi({
     if (
       ![
         "settings",
+        "sections",
+        "sectionOrder",
+        "homepageServices",
         "services",
         "plans",
         "team",
@@ -533,7 +553,26 @@ export function createRoyalApi({
     )
       fail("Unknown content section.", 404);
     let clean;
-    if (section === "copy") {
+    if (section === "sectionOrder") {
+      if (!value || typeof value !== "object" || Array.isArray(value)) fail("Invalid section order.");
+      clean = Object.fromEntries(Object.keys(catalog.sectionOrder).map((key) => {
+        if (!Number.isInteger(value[key]) || value[key] < 0 || value[key] > 6) fail("Invalid section order.");
+        return [key, value[key]];
+      }));
+    } else if (section === "homepageServices") {
+      if (!Array.isArray(value) || value.length > 5 || new Set(value).size !== value.length ||
+          value.some((slug) => typeof slug !== "string" || !current.services.some((service) => service.slug === slug)))
+        fail("Choose up to five existing services.");
+      clean = value;
+    } else if (section === "sections") {
+      if (!value || typeof value !== "object" || Array.isArray(value))
+        fail("Invalid section visibility settings.");
+      clean = Object.fromEntries(Object.keys(catalog.sections).map((key) => {
+        const visible = value[key];
+        if (typeof visible !== "boolean") fail("Each section needs a visibility setting.");
+        return [key, visible];
+      }));
+    } else if (section === "copy") {
       const customTranslations = Object.entries(value || {}).filter(
         ([key]) => key.startsWith("ckb::") && !Object.hasOwn(catalog.copy, key),
       );
@@ -708,6 +747,8 @@ export function createRoyalApi({
       ]);
     }
     const { version, ...updated } = { ...current, [section]: clean };
+    if (section === "services")
+      updated.homepageServices = current.homepageServices.filter((slug) => clean.some((service) => service.slug === slug));
     // Update both languages with the same optimistic version check.
     if (section !== "copy" && req.body.translations !== undefined) {
       const edits = req.body.translations;

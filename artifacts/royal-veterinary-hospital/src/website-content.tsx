@@ -1,6 +1,7 @@
 import type { ImgHTMLAttributes } from "react";
 import { useSite } from "./site-state";
 import { translate, useLanguage } from "./language";
+import { optimizedImageUrl } from "./image-performance";
 
 export function useCopy() {
   const { content } = useSite();
@@ -19,7 +20,7 @@ export function SiteImage({
   const { content } = useSite();
   const t = useCopy();
   const entry = content.media[mediaKey || src];
-  const url = entry?.src || src;
+  const url = optimizedImageUrl(entry?.src || src);
   return (
     <img
       {...props}

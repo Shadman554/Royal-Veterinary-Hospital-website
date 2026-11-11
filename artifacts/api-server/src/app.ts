@@ -72,7 +72,16 @@ if (production) {
     }
     next();
   });
-  app.use(express.static(publicDir, { dotfiles: "deny", index: false }));
+  app.use(express.static(publicDir, {
+    dotfiles: "deny",
+    index: false,
+    setHeaders(res, filePath) {
+      if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+        const hashed = filePath.includes(`${path.sep}dist${path.sep}public${path.sep}assets${path.sep}`);
+        res.setHeader("Cache-Control", hashed ? "public, max-age=31536000, immutable" : "public, max-age=3600");
+      }
+    },
+  }));
   app.get("/{*path}", (_req, res) => {
     res.sendFile(path.join(publicDir, "index.html"));
   });

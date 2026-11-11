@@ -8,9 +8,12 @@ import {
 import { PageIntro } from "./site-ui";
 import { About, Visit } from "./sections";
 import { RoyalWave } from "./RoyalWave";
+import { useSite } from "./site-state";
+import { OrderedPage, OrderedSection } from "./OrderedSection";
 
 export function Facilities() {
   const t = useCopy();
+  const { sections } = useSite().content;
 
   const facilities = [
     {
@@ -30,16 +33,16 @@ export function Facilities() {
     },
   ];
   return (
-    <div className="royal-home">
-      <PageIntro
+    <OrderedPage>
+      {sections.facilitiesIntro && <OrderedSection id="facilitiesIntro"><PageIntro
         eyebrow={t("OUR FACILITIES")}
         title={t("A space for better care.")}
         description={t(
           "A welcoming environment, thoughtful spaces and the tools to understand your companion’s needs.",
         )}
-      />
-      <About full />
-      <RoyalWave className="royal-wave section-wave" />
+      /></OrderedSection>}
+      {sections.facilitiesAbout && <OrderedSection id="facilitiesAbout"><About full /></OrderedSection>}
+      {sections.facilitiesList && <OrderedSection id="facilitiesList"><RoyalWave className="royal-wave section-wave" />
       <div className="royal-body" style={{ padding: 'clamp(40px, 5vw, 70px) 0' }}>
         <div className="royal-heading" style={{ marginBottom: 'clamp(24px, 3vw, 40px)' }}>
           <span>{t("Modern Infrastructure")}</span>
@@ -56,9 +59,9 @@ export function Facilities() {
             </div>
           ))}
         </div>
-      </div>
-      <RoyalWave className="royal-wave section-wave" />
-      <Visit />
-    </div>
+      </div></OrderedSection>}
+      {sections.facilitiesVisit && <OrderedSection id="facilitiesVisit"><RoyalWave className="royal-wave section-wave" />
+      <Visit /></OrderedSection>}
+    </OrderedPage>
   );
 }

@@ -7,6 +7,7 @@ import {
   categorySteps,
 } from "../royal-veterinary-hospital/src/services-data.ts";
 import { defaultSettings } from "../royal-veterinary-hospital/src/site-defaults.ts";
+import { defaultFeaturedServices, defaultSectionOrder, defaultSections } from "../royal-veterinary-hospital/src/page-sections.ts";
 const source = await readFile(
   new URL("../royal-veterinary-hospital/src/content.ts", import.meta.url),
   "utf8",
@@ -39,6 +40,9 @@ await writeFile(
     {
       services,
       settings: defaultSettings,
+      sections: defaultSections,
+      sectionOrder: defaultSectionOrder,
+      homepageServices: defaultFeaturedServices,
       plans,
       team,
       faqs,

@@ -1,7 +1,7 @@
 import { SiteImage, assetUrl } from "./website-content";
 import { useCopy } from "./website-content";
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -24,39 +24,41 @@ import { RoyalWave } from "./RoyalWave";
 
 export function About({ full = false }: { full?: boolean }) {
   const t = useCopy();
-  const { media } = useHospital();
+  const { media, sections } = useHospital();
+  const [location] = useLocation();
+  const show = (key: string) => location !== "/about" || sections[key] !== false;
 
   return (
-    <section className="royal-about royal-body" id="about" style={{ padding: 'clamp(40px, 5vw, 70px) 0' }}>
-      <div className="royal-about-visual royal-feature-visual">
+    <section className={`royal-about royal-body${show("aboutImage") ? "" : " royal-about-no-image"}`} id="about" style={{ padding: 'clamp(40px, 5vw, 70px) 0' }}>
+      {show("aboutImage") && <div className="royal-about-visual royal-feature-visual">
         <RoyalCurvedPhoto
           src={media.about?.src || "/rvh/assets/royal-hospital.png"}
           alt={t("Royal Veterinary Hospital entrance")}
           className="royal-curved-frame"
         />
-      </div>
+      </div>}
       <div className="royal-heading">
         <span>{t("About Us")}</span>
-        <h2>{t("Dedicated To Pet Health & Happiness")}</h2>
-        <p>
+        {show("aboutHeading") && <h2>{t("Dedicated To Pet Health & Happiness")}</h2>}
+        {show("aboutIntroduction") && <p>
           {t(
             "Royal Veterinary Hospital provides compassionate, high-standard veterinary care in Sulaymaniyah. Our multidisciplinary team and modern clinic environment ensure every pet receives the attention and expertise they deserve.",
           )}
-        </p>
-        <p>
+        </p>}
+        {show("aboutDescription") && <p>
           {t(
             "At Royal Veterinary Hospital, we bring thoughtful veterinary medicine and a personal approach together. We listen first, explain clearly, and make time for the little things that help your pet feel safe.",
           )}
-        </p>
+        </p>}
         <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', marginTop: '22px' }}>
-          <Link href={full ? "/team" : "/about"} className="royal-action royal-more-pill">
+          {show("aboutTeamButton") && (full ? sections.pageTeam : sections.pageAbout) && <Link href={full ? "/team" : "/about"} className="royal-action royal-more-pill">
             {full ? t("Meet Our Team") : t("Learn More")}
             <ArrowRight size={16} />
-          </Link>
-          <Link href="/appointment" className="royal-action solid">
+          </Link>}
+          {show("aboutBookingButton") && <Link href="/appointment" className="royal-action solid">
             {t("Book an appointment")}
             <ArrowRight size={16} />
-          </Link>
+          </Link>}
         </div>
       </div>
     </section>

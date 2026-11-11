@@ -11,6 +11,7 @@ import copyDefaults from "./copy-defaults.json";
 import mediaDefaults from "./media-defaults.json";
 import { plans, team, faqs } from "./content";
 import { defaultSettings } from "./site-defaults";
+import { defaultFeaturedServices, defaultSectionOrder, defaultSections } from "./page-sections";
 import { localize, useLanguage } from "./language";
 export const initialContent = {
   services,
@@ -18,6 +19,9 @@ export const initialContent = {
   team,
   faqs,
   settings: defaultSettings,
+  sections: defaultSections,
+  sectionOrder: defaultSectionOrder,
+  homepageServices: defaultFeaturedServices,
   copy: copyDefaults as Record<string, string>,
   media: mediaDefaults as Record<
     string,
@@ -83,7 +87,7 @@ function normalizeContent(data: SiteContent): SiteContent {
   // Previous reference crops are defaults from an earlier homepage design.
   if (media.heroDesktop?.src === "/rvh/assets/reference-welcome.jpg") media.heroDesktop = initialContent.media.heroDesktop;
   if (media.heroMobile?.src === "/rvh/assets/reference-companions.jpg") media.heroMobile = initialContent.media.heroMobile;
-  return { ...data, settings, media, copy: { ...initialContent.copy, ...data.copy } };
+  return { ...data, settings, sections: { ...defaultSections, ...data.sections }, sectionOrder: { ...defaultSectionOrder, ...data.sectionOrder }, homepageServices: data.homepageServices ?? defaultFeaturedServices, media, copy: { ...initialContent.copy, ...data.copy } };
 }
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState(initialContent);

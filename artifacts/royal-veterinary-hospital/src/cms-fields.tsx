@@ -10,6 +10,19 @@ import copyDefaults from "./copy-defaults.json";
 import type { Service } from "./services-data";
 import { servicePhotoStyle } from "./media-display";
 
+async function isAnimatedPng(file: File): Promise<boolean> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const view = new DataView(bytes.buffer);
+  for (let offset = 8; offset + 12 <= bytes.length;) {
+    const size = view.getUint32(offset);
+    const type = String.fromCharCode(...bytes.subarray(offset + 4, offset + 8));
+    if (type === "acTL") return true;
+    if (type === "IDAT" || type === "IEND" || size > bytes.length - offset - 12) break;
+    offset += size + 12;
+  }
+  return false;
+}
+
 function ImagePreview({
   src,
   label,
@@ -125,12 +138,30 @@ export function ImageField({
           "Choose an image no larger than 12,000 pixels on either side.",
         );
       }
-      bitmap.close();
+      let uploadBody: Blob = file;
+      try {
+        if (file.type === "image/jpeg" || (file.type === "image/png" && !(await isAnimatedPng(file)))) {
+          const scale = Math.min(1, 1920 / Math.max(bitmap.width, bitmap.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+          canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+          const context = canvas.getContext("2d");
+          if (context) {
+            context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+            const optimized = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.86));
+            if (optimized?.type === "image/webp" && optimized.size < file.size) uploadBody = optimized;
+          }
+        }
+      } catch {
+        uploadBody = file;
+      } finally {
+        bitmap.close();
+      }
       const response = await fetch("/api/admin/media", {
         method: "POST",
         credentials: "same-origin",
-        headers: { "Content-Type": file.type },
-        body: file,
+        headers: { "Content-Type": uploadBody.type },
+        body: uploadBody,
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Upload failed.");

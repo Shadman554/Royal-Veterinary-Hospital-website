@@ -167,6 +167,14 @@ test("Royal API: authentication, booking workflow, content and persistence", asy
         assert.equal("request_key" in rows[0], false);
       },
     );
+    await t.test("public content supports gzip and uncompressed clients", async () => {
+      const compressed = await fetch(`${base}/content`, { headers: { "Accept-Encoding": "gzip" } });
+      assert.equal(compressed.headers.get("content-encoding"), "gzip");
+      assert.ok((await compressed.json()).services.length > 0);
+      const uncompressed = await fetch(`${base}/content`, { headers: { "Accept-Encoding": "identity" } });
+      assert.equal(uncompressed.headers.get("content-encoding"), null);
+      assert.ok((await uncompressed.json()).services.length > 0);
+    });
     await t.test(
       "confirmation requires agreed timing, supports notes, and rejects stale edits",
       async () => {
@@ -269,6 +277,48 @@ test("Royal API: authentication, booking workflow, content and persistence", asy
         );
       },
     );
+    await t.test("section visibility is saved without removing content", async () => {
+      const before = (await request("/content")).data;
+      const hidden = { ...before.sections, aboutStory: false, homeFaq: false, aboutHeading: false, pageServices: false, navTeam: false };
+      const saved = await request("/admin/content/sections", "PUT", {
+        value: hidden, version: before.version,
+      });
+      assert.equal(saved.response.status, 200);
+      const after = (await request("/content")).data;
+      assert.equal(after.sections.aboutStory, false);
+      assert.equal(after.sections.homeFaq, false);
+      assert.equal(after.sections.aboutHeading, false);
+      assert.equal(after.sections.pageServices, false);
+      assert.equal(after.sections.navTeam, false);
+      assert.equal(after.sections.homeAbout, true);
+      assert.deepEqual(after.copy, before.copy);
+      assert.equal((await request("/admin/content/sections", "PUT", {
+        value: { ...hidden, aboutStory: "false" }, version: after.version,
+      })).response.status, 400);
+      const restored = await request("/admin/content/sections", "PUT", {
+        value: { ...before.sections }, version: after.version,
+      });
+      assert.equal(restored.response.status, 200);
+      assert.equal((await request("/content")).data.sections.aboutStory, true);
+    });
+    await t.test("section order and featured services are validated and saved", async () => {
+      let current = (await request("/content")).data;
+      const order = { ...current.sectionOrder, aboutStory: 2, aboutTeam: 1 };
+      let result = await request("/admin/content/sectionOrder", "PUT", { value: order, version: current.version });
+      assert.equal(result.response.status, 200);
+      assert.equal(result.data.sectionOrder.aboutStory, 2);
+      assert.equal((await request("/admin/content/sectionOrder", "PUT", {
+        value: { ...order, aboutStory: -1 }, version: result.data.version,
+      })).response.status, 400);
+      current = (await request("/content")).data;
+      const choices = [current.services[0].slug, current.services[1].slug];
+      result = await request("/admin/content/homepageServices", "PUT", { value: choices, version: current.version });
+      assert.equal(result.response.status, 200);
+      assert.deepEqual((await request("/content")).data.homepageServices, choices);
+      assert.equal((await request("/admin/content/homepageServices", "PUT", {
+        value: ["missing-service"], version: result.data.version,
+      })).response.status, 400);
+    });
     await t.test(
       "every content editor persists its changes and protects service routes",
       async () => {

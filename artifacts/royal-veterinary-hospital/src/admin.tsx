@@ -46,6 +46,7 @@ import {
   TextField,
 } from "./cms-fields";
 import { SiteImage, assetUrl } from "./website-content";
+import { pageSections } from "./page-sections";
 
 type Booking = {
   id: string;
@@ -82,6 +83,9 @@ const navigation = [
   { id: "team", label: "Our team", icon: UsersRound },
   { id: "faqs", label: "Questions & answers", icon: MessageCircle },
   { id: "settings", label: "Hospital and homepage", icon: Settings2 },
+  { id: "sections", label: "Page sections", icon: LayoutDashboard },
+  { id: "sectionOrder", label: "Section order", icon: ListTree },
+  { id: "homepageServices", label: "Homepage services", icon: Stethoscope },
   { id: "media", label: "Images & branding", icon: ImageIcon },
   { id: "copy", label: "Text & translations", icon: Languages },
   { id: "categories", label: "Care categories", icon: ListTree },
@@ -92,7 +96,7 @@ const navGroups = [
   { label: "Daily work", ids: ["overview", "appointments"] },
   {
     label: "Website editing",
-    ids: ["copy", "settings", "media", "team", "faqs"],
+    ids: ["sections", "sectionOrder", "homepageServices", "copy", "settings", "media", "team", "faqs"],
   },
   {
     label: "Care guides",
@@ -416,7 +420,7 @@ function Workspace({
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <Link href="/" className="admin-brand">
-          <img
+          <SiteImage mediaKey="logo"
             src={`${ASSETS}royal-logo-transparent.png`}
             alt={t("Royal Veterinary Hospital")}
           />
@@ -669,6 +673,9 @@ function Workspace({
               {[
                 "services",
                 "settings",
+                "sections",
+                "sectionOrder",
+                "homepageServices",
                 "plans",
                 "team",
                 "faqs",
@@ -1400,7 +1407,65 @@ function ContentEditor({
             </p>
           )}
           <fieldset className="admin-editor-inputs" disabled={busy}>
-            {section === "copy" ? (
+            {section === "sectionOrder" ? (
+              <div className="admin-editor-fields staff-setting-groups admin-section-settings">
+                <p>{t("Use the arrows to change the order of sections on each page.")}</p>
+                {pageSections.slice(0, 7).map(({ page, sections }) => {
+                  const ordered = [...sections].sort((a, b) => draft.sectionOrder[a[0]] - draft.sectionOrder[b[0]]);
+                  return <section key={page}><h2>{t(page)}</h2>
+                    {ordered.map(([key, label], index) => (
+                      <div className="admin-section-order-row" key={key}>
+                        <span>{t(label)}</span><div>
+                          {[-1, 1].map((direction) => <button type="button" key={direction}
+                            disabled={index + direction < 0 || index + direction >= ordered.length}
+                            aria-label={`${t(direction < 0 ? "Move up" : "Move down")}: ${t(label)}`}
+                            onClick={() => change((next) => {
+                              const other = ordered[index + direction][0];
+                              [next.sectionOrder[key], next.sectionOrder[other]] = [next.sectionOrder[other], next.sectionOrder[key]];
+                            })}>{direction < 0 ? "↑" : "↓"}</button>)}
+                        </div>
+                      </div>
+                    ))}
+                  </section>;
+                })}
+              </div>
+            ) : section === "homepageServices" ? (
+              <div className="admin-editor-fields staff-setting-groups admin-section-settings">
+                <p>{t("Choose up to five services for the homepage. Hidden services will not appear.")}</p>
+                <p>{t("The homepage card count setting can show fewer than your selection.")}</p>
+                <section>
+                  {draft.services.map((service) => (
+                    <label className="admin-section-toggle" key={service.slug}>
+                      <span>{t(service.title)}{service.hidden ? ` · ${t("HIDDEN")}` : ""}</span>
+                      <input type="checkbox" checked={draft.homepageServices.includes(service.slug)}
+                        disabled={!draft.homepageServices.includes(service.slug) && draft.homepageServices.length >= 5}
+                        onChange={(event) => change((next) => {
+                          next.homepageServices = event.target.checked
+                            ? [...next.homepageServices, service.slug]
+                            : next.homepageServices.filter((slug) => slug !== service.slug);
+                        })} />
+                    </label>
+                  ))}
+                </section>
+              </div>
+            ) : section === "sections" ? (
+              <div className="admin-editor-fields staff-setting-groups admin-section-settings">
+                <p>{t("Choose which sections appear on each page. Hidden sections keep their content and can be shown again.")}</p>
+                <p>{t("Hidden pages cannot be opened. Navigation settings only control menu links.")}</p>
+                {pageSections.map(({ page, sections }) => (
+                  <section key={page}>
+                    <h2>{t(page)}</h2>
+                    {sections.map(([key, label]) => (
+                      <label className="admin-section-toggle" key={key}>
+                        <span>{t(label)}</span>
+                        <input type="checkbox" checked={draft.sections[key] !== false}
+                          onChange={(event) => change((next) => { next.sections[key] = event.target.checked; })} />
+                      </label>
+                    ))}
+                  </section>
+                ))}
+              </div>
+            ) : section === "copy" ? (
               <CopyEditor
                 value={draft.copy}
                 onChange={(key, value) =>
