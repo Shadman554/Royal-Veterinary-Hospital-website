@@ -233,7 +233,7 @@ test("Royal API: authentication, booking workflow, content and persistence", asy
         assert.equal((await request("/content")).data.settings.homepageServiceCount, "3");
         assert.equal(
           (await request("/admin/content/settings", "PUT", {
-            value: { ...settings, homepageServiceCount: "6" },
+              value: { ...settings, homepageServiceCount: "61" },
             version: saved.data.version,
           })).response.status,
           400,
@@ -311,10 +311,14 @@ test("Royal API: authentication, booking workflow, content and persistence", asy
         value: { ...order, aboutStory: -1 }, version: result.data.version,
       })).response.status, 400);
       current = (await request("/content")).data;
-      const choices = [current.services[0].slug, current.services[1].slug];
-      result = await request("/admin/content/homepageServices", "PUT", { value: choices, version: current.version });
+      const choices = current.services.slice(0, 7).map((service) => service.slug);
+      result = await request("/admin/content/homepageServices", "PUT", { value: choices, homepageServiceCount: "7", version: current.version });
       assert.equal(result.response.status, 200);
       assert.deepEqual((await request("/content")).data.homepageServices, choices);
+      assert.equal((await request("/content")).data.settings.homepageServiceCount, "7");
+      assert.equal((await request("/admin/content/homepageServices", "PUT", {
+        value: choices, homepageServiceCount: "61", version: result.data.version,
+      })).response.status, 400);
       assert.equal((await request("/admin/content/homepageServices", "PUT", {
         value: ["missing-service"], version: result.data.version,
       })).response.status, 400);

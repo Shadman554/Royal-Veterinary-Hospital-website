@@ -151,7 +151,7 @@ export function HomePage() {
             {content.homepageServices
               .map((slug) => ({ slug, index: featuredServices.findIndex((item) => item.slug === slug) }))
               .filter(({ slug }) => services.some((item) => item.slug === slug && !item.hidden))
-              .slice(0, Math.max(1, Math.min(5, Number(settings.homepageServiceCount) || 5)))
+              .slice(0, Math.max(1, Math.min(60, Number(settings.homepageServiceCount) || 5)))
               .map(({ slug, index: i }) => {
               const service = services.find(
                 (item) => item.slug === slug && !item.hidden,

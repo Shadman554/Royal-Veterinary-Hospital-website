@@ -1210,6 +1210,7 @@ function ContentEditor({
         body: JSON.stringify({
           version: content.version,
           value: draft[section as keyof SiteContent],
+          ...(section === "homepageServices" && { homepageServiceCount: draft.settings.homepageServiceCount }),
           ...(section !== "copy" && {
             translations: Object.fromEntries(
               Object.entries(draft.copy).filter(
@@ -1431,18 +1432,28 @@ function ContentEditor({
               </div>
             ) : section === "homepageServices" ? (
               <div className="admin-editor-fields staff-setting-groups admin-section-settings">
-                <p>{t("Choose up to five services for the homepage. Hidden services will not appear.")}</p>
-                <p>{t("The homepage card count setting can show fewer than your selection.")}</p>
+                <p>{t("Select the services to show on the homepage. Hidden services will not appear until you show them in Services.")}</p>
+                <label>
+                  {t("Maximum number of service cards")}
+                  <select value={draft.settings.homepageServiceCount} onChange={(e) => change((next) => {
+                    next.settings.homepageServiceCount = e.target.value;
+                  })}>
+                    {Array.from({ length: 60 }, (_, index) => index + 1).map((count) => (
+                      <option key={count} value={String(count)}>{count}</option>
+                    ))}
+                  </select>
+                </label>
                 <section>
                   {draft.services.map((service) => (
                     <label className="admin-section-toggle" key={service.slug}>
                       <span>{t(service.title)}{service.hidden ? ` · ${t("HIDDEN")}` : ""}</span>
                       <input type="checkbox" checked={draft.homepageServices.includes(service.slug)}
-                        disabled={!draft.homepageServices.includes(service.slug) && draft.homepageServices.length >= 5}
                         onChange={(event) => change((next) => {
                           next.homepageServices = event.target.checked
                             ? [...next.homepageServices, service.slug]
                             : next.homepageServices.filter((slug) => slug !== service.slug);
+                          if (event.target.checked && Number(next.settings.homepageServiceCount) < next.homepageServices.length)
+                            next.settings.homepageServiceCount = String(next.homepageServices.length);
                         })} />
                     </label>
                   ))}
@@ -1784,23 +1795,6 @@ function ContentEditor({
                     )}
                   </section>
                 ))}
-                <section>
-                  <h2>{t("Homepage services")}</h2>
-                  <label>
-                    {t("Number of service cards")}
-                    <select
-                      value={draft.settings.homepageServiceCount}
-                      onChange={(e) => change((next) => {
-                        next.settings.homepageServiceCount = e.target.value;
-                      })}
-                    >
-                      {[1, 2, 3, 4, 5].map((count) => (
-                        <option key={count} value={String(count)}>{count}</option>
-                      ))}
-                    </select>
-                    <small className="admin-hint">{t("Shows up to this many featured services on the homepage. Hidden services are not shown.")}</small>
-                  </label>
-                </section>
               </div>
             ) : section === "plans" ? (
               <div>

@@ -560,9 +560,12 @@ export function createRoyalApi({
         return [key, value[key]];
       }));
     } else if (section === "homepageServices") {
-      if (!Array.isArray(value) || value.length > 5 || new Set(value).size !== value.length ||
+      if (!Array.isArray(value) || value.length > 60 || new Set(value).size !== value.length ||
           value.some((slug) => typeof slug !== "string" || !current.services.some((service) => service.slug === slug)))
-        fail("Choose up to five existing services.");
+        fail("Choose up to 60 existing services.");
+      if (req.body.homepageServiceCount !== undefined &&
+          (typeof req.body.homepageServiceCount !== "string" || !/^(?:[1-9]|[1-5]\d|60)$/.test(req.body.homepageServiceCount)))
+        fail("Homepage service count must be between 1 and 60.");
       clean = value;
     } else if (section === "sections") {
       if (!value || typeof value !== "object" || Array.isArray(value))
@@ -635,8 +638,8 @@ export function createRoyalApi({
       );
       if (!/^(?:[2-9]\d|1[0-4]\d|150)$/.test(clean.heroTypingSpeed))
         fail("Headline speed must be between 20 and 150 milliseconds.");
-      if (!/^[1-5]$/.test(clean.homepageServiceCount))
-        fail("Homepage service count must be between 1 and 5.");
+      if (!/^(?:[1-9]|[1-5]\d|60)$/.test(clean.homepageServiceCount))
+        fail("Homepage service count must be between 1 and 60.");
       if (!/^\+[1-9]\d{7,14}$/.test(clean.phone))
         fail("Phone must include a country code, for example +9647701234567.");
     } else if (section === "services") {
@@ -747,6 +750,8 @@ export function createRoyalApi({
       ]);
     }
     const { version, ...updated } = { ...current, [section]: clean };
+    if (section === "homepageServices" && req.body.homepageServiceCount !== undefined)
+      updated.settings = { ...current.settings, homepageServiceCount: req.body.homepageServiceCount };
     if (section === "services")
       updated.homepageServices = current.homepageServices.filter((slug) => clean.some((service) => service.slug === slug));
     // Update both languages with the same optimistic version check.
