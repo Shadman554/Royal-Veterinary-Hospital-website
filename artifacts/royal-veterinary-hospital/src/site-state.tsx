@@ -93,6 +93,7 @@ function normalizeContent(data: SiteContent): SiteContent {
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState(initialContent);
   const [online, setOnline] = useState(false);
+  const [preview, setPreview] = useState(false);
   const update = (data: SiteContent) => setContent(normalizeContent(data));
   const refresh = async () => {
     try {
@@ -104,8 +105,22 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     }
   };
   useEffect(() => {
-    void refresh();
+    const showPreview = new URLSearchParams(window.location.search).get("preview") === "1";
+    if (showPreview) {
+      void (async () => {
+        try {
+          const session = await api<{ role: string }>("/admin/session");
+          const saved = sessionStorage.getItem("royal-preview-draft");
+          if (session.role !== "admin" || !saved) throw new Error("Preview unavailable");
+          update(JSON.parse(saved) as SiteContent);
+          setPreview(true);
+          setOnline(true);
+          window.opener = null;
+        } catch { await refresh(); }
+      })();
+    } else void refresh();
     const reload = () => {
+      if (showPreview) return;
       // Admin drafts must survive switching windows; staff refresh explicitly.
       if (window.location.pathname.replace(/\/$/, "") === "/admin") return;
       void refresh();
@@ -115,6 +130,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, []);
   return (
     <SiteContext.Provider value={{ content, online, refresh, update }}>
+      {preview && <div role="status" style={{ background: "#173d2c", color: "white", textAlign: "center", padding: "0.65rem", fontSize: "0.9rem" }}>Preview · پێشبینین — Unpublished changes · گۆڕانکاریی پاشەکەوت نەکراو</div>}
       {children}
     </SiteContext.Provider>
   );

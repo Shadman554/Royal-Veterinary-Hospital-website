@@ -36,6 +36,7 @@ export function createDatabaseAdapter({ databaseUrl, databasePath = ".local/roya
               email TEXT UNIQUE NOT NULL,
               password TEXT NOT NULL
             );
+            ALTER TABLE admins ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'admin';
             CREATE TABLE IF NOT EXISTS sessions (
               token TEXT PRIMARY KEY,
               admin_id TEXT NOT NULL,
@@ -52,6 +53,7 @@ export function createDatabaseAdapter({ databaseUrl, databasePath = ".local/roya
               json TEXT NOT NULL,
               version INTEGER NOT NULL DEFAULT 1
             );
+            CREATE TABLE IF NOT EXISTS content_history (version INTEGER PRIMARY KEY, json TEXT NOT NULL, saved_at TEXT NOT NULL, actor TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS appointments (
               id TEXT PRIMARY KEY,
               request_key TEXT UNIQUE NOT NULL,
@@ -145,10 +147,14 @@ export function createDatabaseAdapter({ databaseUrl, databasePath = ".local/roya
     CREATE TABLE IF NOT EXISTS rate_limits (key TEXT PRIMARY KEY, requests INTEGER NOT NULL, expires INTEGER NOT NULL);
     CREATE INDEX IF NOT EXISTS rate_limits_expires_idx ON rate_limits (expires);
     CREATE TABLE IF NOT EXISTS content (id INTEGER PRIMARY KEY CHECK(id=1), json TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1);
+    CREATE TABLE IF NOT EXISTS content_history (version INTEGER PRIMARY KEY, json TEXT NOT NULL, saved_at TEXT NOT NULL, actor TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS appointments (id TEXT PRIMARY KEY, request_key TEXT UNIQUE NOT NULL, data TEXT NOT NULL, status TEXT NOT NULL, staff_note TEXT NOT NULL DEFAULT '', confirmed_date TEXT NOT NULL DEFAULT '', confirmed_time TEXT NOT NULL DEFAULT '', version INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS activity (id INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT NOT NULL, created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS media (filename TEXT PRIMARY KEY, mime_type TEXT NOT NULL, bytes BLOB NOT NULL, created_at TEXT NOT NULL);
   `);
+  if (!sqlite.prepare("PRAGMA table_info(admins)").all().some((column) => column.name === "role")) {
+    sqlite.exec("ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'");
+  }
 
   return {
     type: "sqlite",

@@ -181,7 +181,7 @@ export function createRoyalApi({
       await db.prepare("DELETE FROM sessions WHERE expires < ?").run(Date.now());
       const session = await db
         .prepare(
-          "SELECT admins.id,admins.email FROM sessions JOIN admins ON admins.id=sessions.admin_id WHERE token=? AND expires>?",
+          "SELECT admins.id,admins.email,admins.role FROM sessions JOIN admins ON admins.id=sessions.admin_id WHERE token=? AND expires>?",
         )
         .get(digest(cookie), Date.now());
       if (!session)
@@ -194,6 +194,10 @@ export function createRoyalApi({
     } catch (err) {
       next(err);
     }
+  };
+  const requireAdmin = (req, res, next) => {
+    if (req.admin.role !== "admin") return res.status(403).json({ error: "Administrator access is required." });
+    next();
   };
   const signIn = async (res, admin) => {
     const token = randomBytes(32).toString("hex");
@@ -209,7 +213,7 @@ export function createRoyalApi({
       path: "/api",
       maxAge: 8 * 60 * 60 * 1000,
     });
-    res.json({ email: admin.email });
+    res.json({ email: admin.email, role: admin.role || "admin" });
   };
   const imagePath = (value) => {
     const url = str(value, "Image", 220);
@@ -266,6 +270,7 @@ export function createRoyalApi({
   api.post(
     "/admin/media",
     authenticate,
+    requireAdmin,
     express.raw({
       type: ["image/png", "image/jpeg", "image/webp", "image/gif"],
       limit: "8mb",
@@ -359,7 +364,7 @@ export function createRoyalApi({
       if (await db.prepare("SELECT id FROM admins LIMIT 1").get())
         fail("An administrator already exists.", 409);
       const admin = { id: randomUUID(), email };
-      await db.prepare("INSERT INTO admins VALUES (?,?,?)").run(
+      await db.prepare("INSERT INTO admins (id,email,password) VALUES (?,?,?)").run(
         admin.id,
         email,
         hashPassword(password),
@@ -386,7 +391,7 @@ export function createRoyalApi({
     await signIn(res, admin);
   });
   api.get("/admin/session", authenticate, (req, res) =>
-    res.json({ email: req.admin.email }),
+    res.json({ email: req.admin.email, role: req.admin.role }),
   );
   api.post("/admin/logout", authenticate, async (req, res) => {
     await db.prepare("DELETE FROM sessions WHERE token=?").run(req.sessionToken);
@@ -527,11 +532,59 @@ export function createRoyalApi({
     );
     res.json({ ok: true });
   });
-  api.get("/admin/activity", authenticate, async (_req, res) => {
+  api.get("/admin/activity", authenticate, requireAdmin, async (_req, res) => {
     const rows = await db.prepare("SELECT * FROM activity ORDER BY id DESC LIMIT 100").all();
     res.json(rows);
   });
-  api.put("/admin/content/:section", authenticate, async (req, res) => {
+  api.get("/admin/staff", authenticate, requireAdmin, async (_req, res) => {
+    res.json(await db.prepare("SELECT id,email,role FROM admins ORDER BY email").all());
+  });
+  api.post("/admin/staff", authenticate, requireAdmin, async (req, res) => {
+    await limit(`staff-create:${req.admin.id}`, 20, 60 * 60 * 1000);
+    const email = str(req.body.email, "Email", 150).toLowerCase();
+    const password = str(req.body.password, "Password", 128);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fail("Enter a valid email address.");
+    if (password.length < 12) fail("Use a password with at least 12 characters.");
+    if (await db.prepare("SELECT id FROM admins WHERE email=?").get(email)) fail("An account with this email already exists.", 409);
+    const id = randomUUID();
+    try {
+      await db.prepare("INSERT INTO admins (id,email,password,role) VALUES (?,?,?,?)").run(id, email, hashPassword(password), "staff");
+    } catch (error) {
+      if (error.code === "23505" || error.code === "SQLITE_CONSTRAINT_UNIQUE") fail("An account with this email already exists.", 409);
+      throw error;
+    }
+    await audit(`Staff account created: ${email}`);
+    res.status(201).json({ id, email, role: "staff" });
+  });
+  api.delete("/admin/staff/:id", authenticate, requireAdmin, async (req, res) => {
+    const staff = await db.prepare("SELECT id,email,role FROM admins WHERE id=?").get(req.params.id);
+    if (!staff || staff.role !== "staff") fail("Staff account not found.", 404);
+    await db.prepare("DELETE FROM admins WHERE id=? AND role=?").run(staff.id, "staff");
+    await db.prepare("DELETE FROM sessions WHERE admin_id=?").run(staff.id);
+    await audit(`Staff account removed: ${staff.email}`);
+    res.json({ ok: true });
+  });
+  api.get("/admin/history", authenticate, requireAdmin, async (_req, res) => {
+    res.json(await db.prepare("SELECT version,saved_at,actor FROM content_history ORDER BY version DESC LIMIT 100").all());
+  });
+  api.post("/admin/history/:version/restore", authenticate, requireAdmin, async (req, res) => {
+    const version = Number(req.params.version);
+    const expected = Number(req.body.version);
+    if (!Number.isSafeInteger(version) || version < 1 || !Number.isSafeInteger(expected) || expected < 1) fail("Invalid version.");
+    const old = await db.prepare("SELECT json FROM content_history WHERE version=?").get(version);
+    if (!old) fail("Version not found.", 404);
+    await db.prepare("INSERT INTO content_history (version,json,saved_at,actor) SELECT version,json,?,? FROM content WHERE id=1 AND version=? ON CONFLICT (version) DO NOTHING")
+      .run(new Date().toISOString(), req.admin.email, expected);
+    const result = await db.prepare("UPDATE content SET json=?,version=version+1 WHERE id=1 AND version=?").run(old.json, expected);
+    if (!result.changes) fail("Website content changed elsewhere. Refresh before saving.", 409);
+    await audit(`Website restored from version ${version}`);
+    res.json(await getContent());
+  });
+  api.get("/admin/media", authenticate, requireAdmin, async (_req, res) => {
+    const rows = await db.prepare("SELECT filename,mime_type,created_at FROM media ORDER BY created_at DESC LIMIT 500").all();
+    res.json(rows.map((row) => ({ ...row, src: `/api/media/${row.filename}` })));
+  });
+  api.put("/admin/content/:section", authenticate, requireAdmin, async (req, res) => {
     const section = req.params.section;
     const value = req.body.value;
     const current = await getContent();
@@ -784,6 +837,8 @@ export function createRoyalApi({
       if (Object.keys(updated.copy).filter(k => k.startsWith("ckb::") && !Object.hasOwn(catalog.copy, k)).length > 500)
         fail("Keep custom translations to 500 entries or fewer.");
     }
+    await db.prepare("INSERT INTO content_history (version,json,saved_at,actor) SELECT version,json,?,? FROM content WHERE id=1 AND version=? ON CONFLICT (version) DO NOTHING")
+      .run(new Date().toISOString(), req.admin.email, Number(req.body.version));
     const result = await db
       .prepare(
         "UPDATE content SET json=?,version=version+1 WHERE id=1 AND version=?",

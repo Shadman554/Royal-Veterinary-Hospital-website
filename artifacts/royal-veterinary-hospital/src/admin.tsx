@@ -87,23 +87,26 @@ const navigation = [
   { id: "sectionOrder", label: "Section order", icon: ListTree },
   { id: "homepageServices", label: "Homepage services", icon: Stethoscope },
   { id: "media", label: "Images & branding", icon: ImageIcon },
+  { id: "library", label: "Media library", icon: ImageIcon },
   { id: "gallery", label: "Gallery & facilities", icon: ImageIcon },
   { id: "copy", label: "Text & translations", icon: Languages },
   { id: "categories", label: "Care categories", icon: ListTree },
   { id: "categorySteps", label: "Care steps", icon: Footprints },
   { id: "activity", label: "Activity & account", icon: ShieldCheck },
+  { id: "staff", label: "Staff accounts", icon: UsersRound },
+  { id: "history", label: "Version history", icon: Clock3 },
 ];
 const navGroups = [
   { label: "Daily work", ids: ["overview", "appointments"] },
   {
     label: "Website editing",
-    ids: ["sections", "sectionOrder", "homepageServices", "copy", "settings", "gallery", "media", "team", "faqs"],
+    ids: ["sections", "sectionOrder", "homepageServices", "copy", "settings", "gallery", "media", "library", "team", "faqs"],
   },
   {
     label: "Care guides",
     ids: ["services", "categories", "categorySteps", "plans"],
   },
-  { label: "Administration", ids: ["activity"] },
+  { label: "Administration", ids: ["activity", "staff", "history"] },
 ];
 const labels: Record<string, string> = {
   phone: "Phone with country code",
@@ -136,7 +139,7 @@ export function Admin() {
 }
 function StaffDashboard() {
   const { t } = useStaff();
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<{ email: string; role: "admin" | "staff" } | null>(null);
   const [setup, setSetup] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -181,6 +184,7 @@ function StaffDashboard() {
   return (
     <Workspace
       email={user.email}
+      role={user.role}
       onLogout={() => {
         setUser(null);
         setSetup(false);
@@ -195,7 +199,7 @@ function AdminLogin({
 }: {
   setup: boolean;
   initialError: string;
-  onLogin: (u: { email: string }) => void;
+  onLogin: (u: { email: string; role: "admin" | "staff" }) => void;
 }) {
   const { t } = useStaff();
   const [error, setError] = useState(initialError);
@@ -309,9 +313,11 @@ function AdminLogin({
 }
 function Workspace({
   email,
+  role,
   onLogout,
 }: {
   email: string;
+  role: "admin" | "staff";
   onLogout: () => void;
 }) {
   const { t, language } = useStaff();
@@ -326,13 +332,17 @@ function Workspace({
   const [selected, setSelected] = useState<Booking | null>(null);
   const [dirty, setDirty] = useState(false);
   const [notice, setNotice] = useState("");
+  const visibleGroups = role === "admin" ? navGroups : [
+    { label: "Daily work", ids: ["overview", "appointments"] },
+    { label: "Administration", ids: ["activity"] },
+  ];
   async function load() {
     setBusy(true);
     setError("");
     try {
       const [rows, events, saved] = await Promise.all([
         api<Booking[]>("/admin/appointments"),
-        api<Activity[]>("/admin/activity"),
+        role === "admin" ? api<Activity[]>("/admin/activity") : Promise.resolve([]),
         api<SiteContent>("/content"),
       ]);
       setBookings(rows);
@@ -351,6 +361,13 @@ function Workspace({
     void load();
   }, []);
   useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void api<Booking[]>("/admin/appointments").then(setBookings).catch(() => {});
+    }, 30000);
+    return () => window.clearInterval(timer);
+  }, []);
+  useEffect(() => {
     const warn = (e: BeforeUnloadEvent) => {
       if (dirty) {
         e.preventDefault();
@@ -361,6 +378,7 @@ function Workspace({
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
   const navigate = (next: string) => {
+    if (!visibleGroups.some((group) => group.ids.includes(next))) return;
     if (
       next === section ||
       (dirty && !window.confirm(t("Discard your unsaved changes?")))
@@ -438,9 +456,9 @@ function Workspace({
             }
           }}
         >
-          <summary aria-label={t("Administrator")}><UserRound size={20} /></summary>
+          <summary aria-label={t(role === "admin" ? "Administrator" : "Staff")}><UserRound size={20} /></summary>
           <div className="admin-mobile-account-menu">
-            <strong>{t("Administrator")}</strong>
+            <strong>{t(role === "admin" ? "Administrator" : "Staff")}</strong>
             <span dir="ltr">{email}</span>
             <button type="button" onClick={signOut}><LogOut size={17} />{t("Sign out")}</button>
           </div>
@@ -448,7 +466,7 @@ function Workspace({
         <label className="staff-mobile-nav">
           {t("Go to section")}
           <select value={section} onChange={(e) => navigate(e.target.value)}>
-            {navGroups.map((g) => (
+            {visibleGroups.map((g) => (
               <optgroup key={g.label} label={t(g.label)}>
                 {g.ids.map((id) => (
                   <option key={id} value={id}>
@@ -460,7 +478,7 @@ function Workspace({
           </select>
         </label>
         <nav aria-label={t("Admin navigation")}>
-          {navGroups.map((g) => (
+          {visibleGroups.map((g) => (
             <div className="staff-nav-group" key={g.label}>
               <h2>{t(g.label)}</h2>
               {g.ids
@@ -495,7 +513,7 @@ function Workspace({
           <span className="admin-user">
             <span>{t("R")}</span>
             <span>
-              <strong>{t("Administrator")}</strong>
+              <strong>{t(role === "admin" ? "Administrator" : "Staff")}</strong>
               <small>{email}</small>
             </span>
           </span>
@@ -581,7 +599,7 @@ function Workspace({
                       </div>
                     ))}
                   </div>
-                  <section className="admin-panel admin-quick-links">
+                  {role === "admin" && <section className="admin-panel admin-quick-links">
                     <div>
                       <span className="eyebrow">{t("WEBSITE CONTENT")}</span>
                       <h2>{t("Manage website content")}</h2>
@@ -613,7 +631,7 @@ function Workspace({
                         <ArrowUpRight size={17} />
                       </button>
                     ))}
-                  </section>
+                  </section>}
                   <div className="admin-overview-grid">
                     <section className="admin-panel">
                       <div className="admin-panel-title">
@@ -725,7 +743,7 @@ function Workspace({
                     </div>
                   </div>
                   <div className="admin-overview-grid">
-                    <section className="admin-panel">
+                    {role === "admin" && <section className="admin-panel">
                       <div className="admin-panel-title">
                         <h2>{t("Recent activity")}</h2>
                       </div>
@@ -750,11 +768,14 @@ function Workspace({
                           </div>
                         ))}
                       </div>
-                    </section>
+                    </section>}
                     <PasswordForm />
                   </div>
                 </>
               )}
+              {section === "staff" && role === "admin" && <StaffAccounts />}
+              {section === "history" && role === "admin" && <ContentHistory content={content} onRestore={(saved) => { update(saved); setRevision((v) => v + 1); }} />}
+              {section === "library" && role === "admin" && <MediaLibrary content={content} />}
             </>
           )}
         </div>
@@ -1152,6 +1173,74 @@ function BookingDrawer({
     </div>
   );
 }
+function MediaLibrary({ content }: { content: SiteContent }) {
+  const { t, language } = useStaff();
+  const [images, setImages] = useState<{ filename: string; src: string; created_at: string }[]>([]);
+  const [query, setQuery] = useState("");
+  const [error, setError] = useState("");
+  useEffect(() => { void api<typeof images>("/admin/media").then(setImages).catch((e) => setError(e.message)); }, []);
+  const references = JSON.stringify(content);
+  const shown = images.filter((image) => image.filename.toLowerCase().includes(query.toLowerCase()));
+  return <><div className="admin-page-heading"><div><h1>{t("Media library")}</h1><p>{t("Uploaded images are available in every image selector.")}</p></div></div>
+    {error && <p className="admin-error" role="alert">{t(error)}</p>}
+    <section className="admin-panel"><label className="admin-library-search">{t("Search filenames")}<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+      {shown.length ? <div className="admin-library-grid">{shown.map((image) => <article key={image.filename}><img src={image.src} alt="" loading="lazy" /><span>{references.includes(image.src) ? t("Used on website") : t("Not currently used")}</span><small>{dateLabel(image.created_at, language)}</small><small dir="ltr">{image.filename}</small></article>)}</div> : <p>{t("No uploaded images found.")}</p>}
+    </section></>;
+}
+
+function StaffAccounts() {
+  const { t } = useStaff();
+  const [accounts, setAccounts] = useState<{ id: string; email: string; role: string }[]>([]);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const load = () => api<typeof accounts>("/admin/staff").then(setAccounts).catch((e) => setError(e.message));
+  useEffect(() => { void load(); }, []);
+  async function add(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form));
+    setBusy(true); setError(""); setMessage("");
+    try {
+      await api("/admin/staff", { method: "POST", body: JSON.stringify(data) });
+      form.reset(); await load(); setMessage("Staff account created.");
+    } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  }
+  async function remove(id: string) {
+    if (!window.confirm(t("Remove this staff account? Their active sessions will end."))) return;
+    setBusy(true); setError(""); setMessage("");
+    try { await api(`/admin/staff/${id}`, { method: "DELETE", body: "{}" }); await load(); setMessage("Staff account removed."); }
+    catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  }
+  return <div className="admin-page-heading-block">
+    <div className="admin-page-heading"><div><h1>{t("Staff accounts")}</h1><p>{t("Staff can manage appointments and their own password.")}</p></div></div>
+    {error && <p className="admin-error" role="alert">{t(error)}</p>}{message && <p className="admin-success" role="status">{t(message)}</p>}
+    <div className="admin-overview-grid">
+      <section className="admin-panel"><h2>{t("Accounts")}</h2>{accounts.map((account) => <div className="admin-account-row" key={account.id}><span><strong dir="ltr">{account.email}</strong><small>{t(account.role === "admin" ? "Administrator" : "Staff")}</small></span>{account.role === "staff" && <button type="button" disabled={busy} onClick={() => void remove(account.id)}>{t("Remove")}</button>}</div>)}</section>
+      <section className="admin-panel"><h2>{t("Add staff account")}</h2><form className="admin-account-form" onSubmit={add}><label>{t("Email address")}<input name="email" type="email" autoComplete="off" required maxLength={150} /></label><label>{t("Temporary password")}<input name="password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /></label><p>{t("Use at least 12 characters. Staff can change this password after signing in.")}</p><button className="button" disabled={busy}>{t("Create account")}</button></form></section>
+    </div>
+  </div>;
+}
+function ContentHistory({ content, onRestore }: { content: SiteContent; onRestore: (content: SiteContent) => void }) {
+  const { t, language } = useStaff();
+  const [versions, setVersions] = useState<{ version: number; saved_at: string; actor: string }[]>([]);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const load = () => api<typeof versions>("/admin/history").then(setVersions).catch((e) => setError(e.message));
+  useEffect(() => { void load(); }, []);
+  async function restore(version: number) {
+    if (!window.confirm(t("Restore this version of the entire website? Appointments and accounts will not be changed."))) return;
+    setBusy(true); setError(""); setMessage("");
+    try { const saved = await api<SiteContent>(`/admin/history/${version}/restore`, { method: "POST", body: JSON.stringify({ version: content.version }) }); onRestore(saved); await load(); setMessage("Website version restored."); }
+    catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  }
+  return <><div className="admin-page-heading"><div><h1>{t("Version history")}</h1><p>{t("Restore earlier saved website content. Appointments and accounts are separate.")}</p></div></div>
+    {error && <p className="admin-error" role="alert">{t(error)}</p>}{message && <p className="admin-success" role="status">{t(message)}</p>}
+    <section className="admin-panel">{versions.length === 0 ? <p>{t("Earlier versions will appear here after you save changes.")}</p> : versions.map((item) => <div className="admin-account-row" key={item.version}><span><strong>{t("Version")} {item.version}</strong><small>{dateLabel(item.saved_at, language)} · <span dir="ltr">{item.actor}</span></small></span><button type="button" disabled={busy} onClick={() => void restore(item.version)}>{t("Restore")}</button></div>)}</section>
+  </>;
+}
+
 function ContentEditor({
   section,
   content,
@@ -1390,6 +1479,13 @@ function ContentEditor({
       >
         <form onSubmit={save} className="admin-content-form">
           <div className="admin-editor-toolbar">
+            <button type="button" className="outline-button" onClick={() => {
+              try {
+                sessionStorage.setItem("royal-preview-draft", JSON.stringify(draft));
+                const preview = window.open("/?preview=1", "_blank");
+                if (!preview) setError("Allow pop-ups to open the preview.");
+              } catch { setError("Preview is unavailable in this browser."); }
+            }}><Eye size={16} />{t("Preview changes")}</button>
             {section === "services" && <span>{t(`${draft.services.length} service guides`)}</span>}
             <div>
               {saved && (

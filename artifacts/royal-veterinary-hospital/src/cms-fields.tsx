@@ -2,7 +2,7 @@ import { BilingualField, BilingualList } from "./bilingual-fields";
 import { useStaff } from "./staff-language";
 import { useState } from "react";
 import { Upload, ImageIcon, RotateCcw, Plus, X } from "lucide-react";
-import { useSite } from "./site-state";
+import { api, useSite } from "./site-state";
 import { assetUrl } from "./website-content";
 import mediaDefaults from "./media-defaults.json";
 import copyGroups from "./copy-groups.json";
@@ -104,9 +104,12 @@ export function ImageField({
   const { content } = useSite();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [library, setLibrary] = useState<string[]>([]);
+  const [libraryLoaded, setLibraryLoaded] = useState(false);
   const sources = [
     ...new Set([
       ...Object.values(mediaDefaults).map((m) => m.src),
+      ...library,
       ...Object.values(content.media).map((m) => m.src),
       ...content.team.map((t) => assetUrl(t[3])),
       ...content.services.map((s) => assetUrl(s.icon)),
@@ -201,6 +204,9 @@ export function ImageField({
             {t("Or choose from your library")}
             <select
               value={value ? assetUrl(value) : ""}
+              onFocus={() => {
+                if (!libraryLoaded) void api<{ src: string }[]>("/admin/media").then((rows) => { setLibrary(rows.map((row) => row.src)); setLibraryLoaded(true); }).catch((e) => setError(e.message));
+              }}
               onChange={(e) => onChange(e.target.value)}
               disabled={busy}
             >
