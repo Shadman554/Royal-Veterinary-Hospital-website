@@ -541,6 +541,7 @@ export function createRoyalApi({
         "sections",
         "sectionOrder",
         "homepageServices",
+        "gallery",
         "services",
         "plans",
         "team",
@@ -553,7 +554,21 @@ export function createRoyalApi({
     )
       fail("Unknown content section.", 404);
     let clean;
-    if (section === "sectionOrder") {
+    if (section === "gallery") {
+      if (!Array.isArray(value) || value.length > 100) fail("Use at most 100 gallery items.");
+      clean = value.map((item) => {
+        const id = str(item?.id, "Gallery ID", 36);
+        if (!/^[a-f0-9-]{36}$/i.test(id)) fail("Invalid gallery item.");
+        if (!["memories", "facilities"].includes(item?.category)) fail("Choose a gallery category.");
+        return {
+          id, category: item.category,
+          image: imagePath(item.image),
+          title: str(item.title, "Title", 150),
+          description: str(item.description ?? "", "Description", 1000, true),
+        };
+      });
+      if (new Set(clean.map((item) => item.id)).size !== clean.length) fail("Gallery items must be unique.");
+    } else if (section === "sectionOrder") {
       if (!value || typeof value !== "object" || Array.isArray(value)) fail("Invalid section order.");
       clean = Object.fromEntries(Object.keys(catalog.sectionOrder).map((key) => {
         if (!Number.isInteger(value[key]) || value[key] < 0 || value[key] > 6) fail("Invalid section order.");
@@ -680,7 +695,7 @@ export function createRoyalApi({
           category: edited.category,
           icon: imagePath(edited.icon),
           keywords: str(edited.keywords || "", "Search keywords", 500, true),
-          ...(edited.hidden ? { hidden: true } : {}),
+          hidden: Boolean(edited.hidden),
           topics: edited.topics.map((row) => [
             str(row?.[0], "Topic title", 150),
             str(row?.[1], "Topic description", 1500),

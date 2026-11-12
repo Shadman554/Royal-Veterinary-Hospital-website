@@ -87,6 +87,7 @@ const navigation = [
   { id: "sectionOrder", label: "Section order", icon: ListTree },
   { id: "homepageServices", label: "Homepage services", icon: Stethoscope },
   { id: "media", label: "Images & branding", icon: ImageIcon },
+  { id: "gallery", label: "Gallery & facilities", icon: ImageIcon },
   { id: "copy", label: "Text & translations", icon: Languages },
   { id: "categories", label: "Care categories", icon: ListTree },
   { id: "categorySteps", label: "Care steps", icon: Footprints },
@@ -96,7 +97,7 @@ const navGroups = [
   { label: "Daily work", ids: ["overview", "appointments"] },
   {
     label: "Website editing",
-    ids: ["sections", "sectionOrder", "homepageServices", "copy", "settings", "media", "team", "faqs"],
+    ids: ["sections", "sectionOrder", "homepageServices", "copy", "settings", "gallery", "media", "team", "faqs"],
   },
   {
     label: "Care guides",
@@ -681,6 +682,7 @@ function Workspace({
                 "faqs",
                 "copy",
                 "media",
+                "gallery",
                 "categories",
                 "categorySteps",
               ].includes(section) && (
@@ -1408,10 +1410,38 @@ function ContentEditor({
             </p>
           )}
           <fieldset className="admin-editor-inputs" disabled={busy}>
-            {section === "sectionOrder" ? (
+            {section === "gallery" ? (
+              <div className="admin-editor-fields gallery-editor">
+                <p>{t("Add hospital memories to the gallery or add photos of rooms and equipment to the facilities page.")}</p>
+                {draft.gallery.map((item, index) => (
+                  <section className="admin-repeat-item" key={item.id}>
+                    <div className="admin-repeat-heading">
+                      <strong>{item.title || t("New photo")}</strong>
+                      <button type="button" className="outline-button" onClick={() => change((next) => { next.gallery.splice(index, 1); })}>
+                        <Trash2 size={16} /> {t("Remove")}
+                      </button>
+                    </div>
+                    <label>{t("Show this photo in")}
+                      <select value={item.category} onChange={(e) => change((next) => {
+                        next.gallery[index].category = e.target.value as "memories" | "facilities";
+                      })}>
+                        <option value="memories">{t("Hospital memories")}</option>
+                        <option value="facilities">{t("Rooms and equipment")}</option>
+                      </select>
+                    </label>
+                    <ImageField label="Photo" value={item.image} onChange={(value) => change((next) => { next.gallery[index].image = value; })} />
+                    <BilingualField label="Photo title" value={item.title} required maxLength={150} onChange={(value) => change((next) => { next.gallery[index].title = value; })} />
+                    <BilingualField label="Photo description" value={item.description} long maxLength={1000} onChange={(value) => change((next) => { next.gallery[index].description = value; })} />
+                  </section>
+                ))}
+                <button type="button" className="outline-button" onClick={() => change((next) => {
+                  next.gallery.push({ id: crypto.randomUUID(), category: "memories", image: "", title: "", description: "" });
+                })}><Plus size={16} /> {t("Add photo")}</button>
+              </div>
+            ) : section === "sectionOrder" ? (
               <div className="admin-editor-fields staff-setting-groups admin-section-settings">
                 <p>{t("Use the arrows to change the order of sections on each page.")}</p>
-                {pageSections.slice(0, 7).map(({ page, sections }) => {
+                {pageSections.slice(0, 8).map(({ page, sections }) => {
                   const ordered = [...sections].sort((a, b) => draft.sectionOrder[a[0]] - draft.sectionOrder[b[0]]);
                   return <section key={page}><h2>{t(page)}</h2>
                     {ordered.map(([key, label], index) => (

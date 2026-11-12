@@ -166,28 +166,23 @@ export function HomePage() {
               const [title, description] = cards[i] ?? [service.title, service.short];
               return (
                 <Link
-                  className="royal-card"
+                  className="royal-card care-card-royal home-service-card"
                   key={slug}
                   href={`/service-${slug}`}
                 >
                   <div className="royal-card-visual">
                     <SiteImage className="royal-service-icon" src={assetUrl(service.icon)} alt="" loading="lazy" />
                   </div>
-                  <div className="royal-card-content">
-                    <h3>
+                  <h3>
                       {stored?.title === original?.title
                         ? t(title)
                         : service.title}
-                    </h3>
-                    <p>
+                  </h3>
+                  <p>
                       {stored?.short === original?.short
                         ? t(description)
                         : service.short}
-                    </p>
-                    <span className="royal-card-link">
-                      {t("Learn More")} <ArrowRight size={15} />
-                    </span>
-                  </div>
+                  </p>
                 </Link>
               );
             })}

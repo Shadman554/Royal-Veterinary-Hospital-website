@@ -301,6 +301,19 @@ test("Royal API: authentication, booking workflow, content and persistence", asy
       assert.equal(restored.response.status, 200);
       assert.equal((await request("/content")).data.sections.aboutStory, true);
     });
+    await t.test("hidden services can be made visible again", async () => {
+      const original = (await request("/content")).data;
+      const hiddenServices = structuredClone(original.services);
+      hiddenServices[0].hidden = true;
+      const hidden = await request("/admin/content/services", "PUT", { value: hiddenServices, version: original.version });
+      assert.equal(hidden.response.status, 200);
+      assert.equal(hidden.data.services[0].hidden, true);
+      const visibleServices = structuredClone(hidden.data.services);
+      visibleServices[0].hidden = false;
+      const visible = await request("/admin/content/services", "PUT", { value: visibleServices, version: hidden.data.version });
+      assert.equal(visible.response.status, 200);
+      assert.equal((await request("/content")).data.services[0].hidden, false);
+    });
     await t.test("section order and featured services are validated and saved", async () => {
       let current = (await request("/content")).data;
       const order = { ...current.sectionOrder, aboutStory: 2, aboutTeam: 1 };
@@ -439,6 +452,17 @@ test("Royal API: authentication, booking workflow, content and persistence", asy
         assert.match(image.headers.get("content-type"), /image\/png/);
         assert.deepEqual(Buffer.from(await image.arrayBuffer()), imageBytes);
         let latest = (await request("/content")).data;
+        const galleryItems = [
+          { id: randomUUID(), category: "memories", image: src, title: "A hospital memory", description: "A special day" },
+          { id: randomUUID(), category: "facilities", image: src, title: "Examination room", description: "" },
+        ];
+        const gallerySaved = await request("/admin/content/gallery", "PUT", { value: galleryItems, version: latest.version });
+        assert.equal(gallerySaved.response.status, 200);
+        assert.deepEqual((await request("/content")).data.gallery, galleryItems);
+        assert.equal((await request("/admin/content/gallery", "PUT", {
+          value: [{ ...galleryItems[0], image: "javascript:alert(1)" }], version: gallerySaved.data.version,
+        })).response.status, 400);
+        latest = gallerySaved.data;
         const sections = {
           team: latest.team.map((row, i) =>
             i === 0 ? [...row.slice(0, 3), src] : row,

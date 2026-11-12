@@ -10,6 +10,7 @@ import { About, Visit } from "./sections";
 import { RoyalWave } from "./RoyalWave";
 import { useSite } from "./site-state";
 import { OrderedPage, OrderedSection } from "./OrderedSection";
+import { GalleryPhotos } from "./gallery";
 
 export function Facilities() {
   const t = useCopy();
@@ -62,6 +63,7 @@ export function Facilities() {
       </div></OrderedSection>}
       {sections.facilitiesVisit && <OrderedSection id="facilitiesVisit"><RoyalWave className="royal-wave section-wave" />
       <Visit /></OrderedSection>}
+      {sections.facilitiesPhotos && <OrderedSection id="facilitiesPhotos"><GalleryPhotos category="facilities" /></OrderedSection>}
     </OrderedPage>
   );
 }

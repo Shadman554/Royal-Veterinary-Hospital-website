@@ -1233,6 +1233,33 @@
 .care-card-royal .royal-card-visual { border-radius: 16px; aspect-ratio: 1.45; }
 .care-card-royal h3, .care-card-royal p { margin-inline: 8px; }
 .care-card-royal p { margin-bottom: 10px; }
+.royal-services .royal-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.royal-services .home-service-card {
+  min-height: 220px;
+  padding: clamp(20px, 2.2vw, 30px);
+  border-width: 1.5px;
+  border-radius: 24px;
+}
+.royal-services .home-service-card .royal-card-visual {
+  width: auto;
+  height: 60px;
+  aspect-ratio: auto;
+  justify-content: flex-start;
+  background: transparent;
+  border-radius: 0;
+  margin-bottom: 16px;
+  overflow: visible;
+}
+.royal-services .home-service-card .royal-service-icon { width: 52px; height: 52px; }
+.royal-services .home-service-card h3,
+.royal-services .home-service-card p { margin-inline: 0; }
+@media (max-width: 760px) {
+  .royal-services .royal-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .royal-services .home-service-card { min-height: 200px; padding: 18px; border-radius: 18px; }
+}
+@media (max-width: 360px) {
+  .royal-services .royal-cards { grid-template-columns: 1fr; }
+}
 #top .care-detail-hero { background: #fff; }
 #top .care-detail-emblem { background: #edf6e5; border-color: #b3df9c; }
 #top .care-search, #top .directory-help, #top .care-booking-card, #top .booking-aside > div, #top .request-review { border-radius: 18px; }

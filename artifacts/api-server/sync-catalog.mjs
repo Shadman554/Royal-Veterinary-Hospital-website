@@ -43,6 +43,7 @@ await writeFile(
       sections: defaultSections,
       sectionOrder: defaultSectionOrder,
       homepageServices: defaultFeaturedServices,
+      gallery: [],
       plans,
       team,
       faqs,

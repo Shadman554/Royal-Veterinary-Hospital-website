@@ -21,6 +21,7 @@ import { ServiceDetail, ServiceDirectory } from "./service-experience";
 import { useLanguage } from "./language";
 import { RoyalWave } from "./RoyalWave";
 import { OrderedPage, OrderedSection } from "./OrderedSection";
+import { Gallery } from "./gallery";
 
 function DocumentLanguage() {
   const { language } = useLanguage();
@@ -184,6 +185,9 @@ function Content() {
         </Route>
         <Route path="/facilities">
           {sections.pageFacilities ? <Facilities /> : <NotFound />}
+        </Route>
+        <Route path="/gallery">
+          {sections.pageGallery ? <Gallery /> : <NotFound />}
         </Route>
         <Route path="/contact">
           {sections.pageContact ? <OrderedPage>

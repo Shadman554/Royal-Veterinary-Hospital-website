@@ -111,7 +111,7 @@ export function ImageField({
       ...content.team.map((t) => assetUrl(t[3])),
       ...content.services.map((s) => assetUrl(s.icon)),
       ...content.categories.map((c) => assetUrl(c.icon)),
-      assetUrl(value),
+      ...(value ? [assetUrl(value)] : []),
     ]),
   ];
   async function upload(file?: File) {
@@ -176,13 +176,13 @@ export function ImageField({
     <div className="cms-image-field" data-uploading={busy || undefined}>
       <span className="cms-field-label">{t(label)}</span>
       <div className="cms-image-controls">
-        <ImagePreview
+        {value ? <ImagePreview
           key={value}
           src={assetUrl(value)}
           label={label}
           placement={placement}
           portrait={portrait}
-        />
+        /> : <div className="cms-image-preview cms-image-unavailable"><ImageIcon size={22} aria-hidden="true" /><span>{t("Choose a photo")}</span></div>}
         <div>
           <label className="outline-button cms-upload">
             <Upload size={16} />
@@ -200,10 +200,11 @@ export function ImageField({
           <label className="cms-library-label">
             {t("Or choose from your library")}
             <select
-              value={assetUrl(value)}
+              value={value ? assetUrl(value) : ""}
               onChange={(e) => onChange(e.target.value)}
               disabled={busy}
             >
+              {!value && <option value="" disabled>{t("Choose a photo")}</option>}
               {sources.map((src) => (
                 <option key={src} value={src}>
                   {src.startsWith("/api/media/")

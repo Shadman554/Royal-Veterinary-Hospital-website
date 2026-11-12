@@ -22,6 +22,7 @@ export const initialContent = {
   sections: defaultSections,
   sectionOrder: defaultSectionOrder,
   homepageServices: defaultFeaturedServices,
+  gallery: [] as { id: string; category: "memories" | "facilities"; image: string; title: string; description: string }[],
   copy: copyDefaults as Record<string, string>,
   media: mediaDefaults as Record<
     string,
@@ -87,7 +88,7 @@ function normalizeContent(data: SiteContent): SiteContent {
   // Previous reference crops are defaults from an earlier homepage design.
   if (media.heroDesktop?.src === "/rvh/assets/reference-welcome.jpg") media.heroDesktop = initialContent.media.heroDesktop;
   if (media.heroMobile?.src === "/rvh/assets/reference-companions.jpg") media.heroMobile = initialContent.media.heroMobile;
-  return { ...data, settings, sections: { ...defaultSections, ...data.sections }, sectionOrder: { ...defaultSectionOrder, ...data.sectionOrder }, homepageServices: data.homepageServices ?? defaultFeaturedServices, media, copy: { ...initialContent.copy, ...data.copy } };
+  return { ...data, settings, sections: { ...defaultSections, ...data.sections }, sectionOrder: { ...defaultSectionOrder, ...data.sectionOrder }, homepageServices: data.homepageServices ?? defaultFeaturedServices, gallery: data.gallery ?? [], media, copy: { ...initialContent.copy, ...data.copy } };
 }
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState(initialContent);
@@ -134,6 +135,7 @@ export function useHospital() {
             plans: localize(content.plans, content.copy),
             team: localize(content.team, content.copy),
             faqs: localize(content.faqs, content.copy),
+            gallery: localize(content.gallery, content.copy),
             categories: localize(content.categories, content.copy),
             categorySteps: localize(content.categorySteps, content.copy),
           }

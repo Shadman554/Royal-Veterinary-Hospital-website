@@ -48,6 +48,7 @@ const fixedKeys = new Set([
   "icon",
   "related",
   "src",
+  "image",
   "phone",
   "phoneDisplay",
   "price",

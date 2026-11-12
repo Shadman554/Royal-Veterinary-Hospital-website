@@ -72,7 +72,7 @@ export function SectionHead({
 }
 const primaryNavigation = [
   ["/", "Home", "navHome", null], ["/services", "Services", "navServices", "pageServices"], ["/team", "Our Team", "navTeam", "pageTeam"],
-  ["/about", "About Us", "navAbout", "pageAbout"], ["/contact", "Contact", "navContact", "pageContact"],
+  ["/about", "About Us", "navAbout", "pageAbout"], ["/gallery", "Gallery", "navGallery", "pageGallery"], ["/contact", "Contact", "navContact", "pageContact"],
 ] as const;
 export function Header() {
   const t = useCopy();
@@ -229,6 +229,7 @@ export function Footer() {
             {sections.navAbout && sections.pageAbout && <Link href="/about">{t("About Us")}</Link>}
             {sections.navTeam && sections.pageTeam && <Link href="/team">{t("Our Team")}</Link>}
             {sections.navFacilities && sections.pageFacilities && <Link href="/facilities">{t("Our facilities")}</Link>}
+            {sections.navGallery && sections.pageGallery && <Link href="/gallery">{t("Gallery")}</Link>}
             {sections.navPackages && sections.pagePackages && <Link href="/packages">{t("Packages")}</Link>}
             {sections.navContact && sections.pageContact && <Link href="/contact">{t("Contact")}</Link>}
           </nav>

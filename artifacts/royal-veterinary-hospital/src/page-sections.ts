@@ -20,20 +20,25 @@ export const pageSections = [
   ] },
   { page: "Facilities page", sections: [
     ["facilitiesIntro", "Page introduction"], ["facilitiesAbout", "About the hospital"],
-    ["facilitiesList", "Facilities"], ["facilitiesVisit", "Visit us"],
+    ["facilitiesList", "Facilities"], ["facilitiesVisit", "Visit us"], ["facilitiesPhotos", "Facility photos"],
   ] },
   { page: "Services page", sections: [
     ["servicesIntro", "Page introduction"], ["servicesDirectory", "Services directory"],
     ["servicesContact", "Contact prompt"],
   ] },
+  { page: "Gallery page", sections: [
+    ["galleryIntro", "Page introduction"], ["galleryPhotos", "Hospital memories"],
+  ] },
   { page: "Navigation", sections: [
     ["navHome", "Home"], ["navServices", "Services"], ["navTeam", "Our team"],
     ["navAbout", "About Us"], ["navContact", "Contact"],
     ["navFacilities", "Facilities"], ["navPackages", "Care packages"],
+    ["navGallery", "Gallery"],
   ] },
   { page: "Pages", sections: [
     ["pageServices", "Services"], ["pageAbout", "About Us"], ["pageTeam", "Our team"],
     ["pageFacilities", "Facilities"], ["pagePackages", "Care packages"], ["pageContact", "Contact"],
+    ["pageGallery", "Gallery"],
   ] },
   { page: "About page elements", sections: [
     ["aboutHeading", "Heading"], ["aboutIntroduction", "Introduction"],
@@ -47,5 +52,5 @@ export const defaultSections: Record<string, boolean> = Object.fromEntries(
 );
 export const defaultFeaturedServices = ["general-care", "vaccination", "surgery", "dental-care", "grooming"];
 export const defaultSectionOrder: Record<string, number> = Object.fromEntries(
-  pageSections.slice(0, 7).flatMap(({ sections }) => sections.map(([key], index) => [key, index])),
+  pageSections.slice(0, 8).flatMap(({ sections }) => sections.map(([key], index) => [key, index])),
 );
