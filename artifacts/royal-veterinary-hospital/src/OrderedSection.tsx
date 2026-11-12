@@ -1,13 +1,18 @@
 import { Children, isValidElement, type ReactNode } from "react";
-import { useSite } from "./site-state";
+import { useHospital, useSite } from "./site-state";
+import { useLocation } from "wouter";
+import { assetUrl } from "./website-content";
 
 export function OrderedPage({ children }: { children: ReactNode }) {
   const { sectionOrder } = useSite().content;
-  const items = Children.toArray(children).sort((a, b) => {
-    const left = isValidElement<{ id: string }>(a) ? sectionOrder[a.props.id] ?? 0 : 0;
-    const right = isValidElement<{ id: string }>(b) ? sectionOrder[b.props.id] ?? 0 : 0;
-    return left - right;
-  });
+  const { customSections } = useHospital();
+  const [location] = useLocation();
+  const builtIn = Children.toArray(children).map((node) => ({ node, order: isValidElement<{ id: string }>(node) ? sectionOrder[node.props.id] ?? 0 : 0 }));
+  const custom = customSections.filter((item) => item.visible && item.page === location).map((item) => ({
+    order: item.after === "start" ? -0.5 : (sectionOrder[item.after] ?? 0) + 0.5,
+    node: <section className="royal-custom-section" key={item.id}><div className="royal-custom-content"><div><h2>{item.title}</h2>{item.body && <p>{item.body}</p>}</div>{item.image && <img src={assetUrl(item.image)} alt="" loading="lazy" />}</div></section>,
+  }));
+  const items = [...builtIn, ...custom].sort((a, b) => a.order - b.order).map((item) => item.node);
   return <div className="royal-home royal-ordered-page">{items}</div>;
 }
 export function OrderedSection({ id, children }: { id: string; children: ReactNode }) {

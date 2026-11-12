@@ -2841,3 +2841,10 @@ img[data-photo="true"] {
   border-radius: 50%;
   aspect-ratio: 1;
 }
+.royal-custom-section { padding: clamp(2.5rem, 5vw, 5rem) max(1.25rem, calc((100% - 1200px) / 2)); }
+.royal-custom-content { display: flex; align-items: center; gap: clamp(1.5rem, 4vw, 4rem); }
+.royal-custom-content > div { flex: 1; min-width: 0; }
+.royal-custom-content h2 { margin: 0 0 1rem; color: #173d2c; font-size: clamp(1.6rem, 3vw, 2.5rem); }
+.royal-custom-content p { white-space: pre-wrap; line-height: 1.8; }
+.royal-custom-content img { width: min(45%, 480px); height: auto; border-radius: 1rem; }
+@media (max-width: 640px) { .royal-custom-content { flex-direction: column; align-items: stretch; } .royal-custom-content img { width: 100%; max-width: none; } }

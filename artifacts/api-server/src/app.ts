@@ -26,10 +26,11 @@ if (
 // On Railway (and most PaaS platforms) the reverse proxy is NOT on loopback;
 // trusting 1 hop correctly populates req.ip from X-Forwarded-For.
 if (production) app.set("trust proxy", 1);
-app.use((_req, res, next) => {
+app.use((req, res, next) => {
+  const previewFrame = req.method === "GET" && req.path === "/" && req.query.previewFrame === "1";
   res.set({
     "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
+    "X-Frame-Options": previewFrame ? "SAMEORIGIN" : "DENY",
     "Referrer-Policy": "same-origin",
     "X-DNS-Prefetch-Control": "off",
     "X-Download-Options": "noopen",
@@ -42,7 +43,7 @@ app.use((_req, res, next) => {
     res.set({
       "Strict-Transport-Security": "max-age=31536000",
       "Content-Security-Policy":
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+        `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors ${previewFrame ? "'self'" : "'none'"}; object-src 'none'; base-uri 'self'; form-action 'self'`,
     });
   next();
 });

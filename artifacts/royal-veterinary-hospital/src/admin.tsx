@@ -85,6 +85,7 @@ const navigation = [
   { id: "settings", label: "Hospital and homepage", icon: Settings2 },
   { id: "sections", label: "Page sections", icon: LayoutDashboard },
   { id: "sectionOrder", label: "Section order", icon: ListTree },
+  { id: "customSections", label: "Custom sections", icon: LayoutDashboard },
   { id: "homepageServices", label: "Homepage services", icon: Stethoscope },
   { id: "media", label: "Images & branding", icon: ImageIcon },
   { id: "library", label: "Media library", icon: ImageIcon },
@@ -95,18 +96,19 @@ const navigation = [
   { id: "activity", label: "Activity & account", icon: ShieldCheck },
   { id: "staff", label: "Staff accounts", icon: UsersRound },
   { id: "history", label: "Version history", icon: Clock3 },
+  { id: "backup", label: "Backup & restore", icon: Download },
 ];
 const navGroups = [
   { label: "Daily work", ids: ["overview", "appointments"] },
   {
     label: "Website editing",
-    ids: ["sections", "sectionOrder", "homepageServices", "copy", "settings", "gallery", "media", "library", "team", "faqs"],
+    ids: ["sections", "sectionOrder", "customSections", "homepageServices", "copy", "settings", "gallery", "media", "library", "team", "faqs"],
   },
   {
     label: "Care guides",
     ids: ["services", "categories", "categorySteps", "plans"],
   },
-  { label: "Administration", ids: ["activity", "staff", "history"] },
+  { label: "Administration", ids: ["activity", "staff", "history", "backup"] },
 ];
 const labels: Record<string, string> = {
   phone: "Phone with country code",
@@ -694,6 +696,7 @@ function Workspace({
                 "settings",
                 "sections",
                 "sectionOrder",
+                "customSections",
                 "homepageServices",
                 "plans",
                 "team",
@@ -775,6 +778,7 @@ function Workspace({
               )}
               {section === "staff" && role === "admin" && <StaffAccounts />}
               {section === "history" && role === "admin" && <ContentHistory content={content} onRestore={(saved) => { update(saved); setRevision((v) => v + 1); }} />}
+              {section === "backup" && role === "admin" && <BackupSettings onRestore={onLogout} />}
               {section === "library" && role === "admin" && <MediaLibrary content={content} />}
             </>
           )}
@@ -1173,6 +1177,41 @@ function BookingDrawer({
     </div>
   );
 }
+function BackupSettings({ onRestore }: { onRestore: () => void }) {
+  const { t } = useStaff();
+  const [available, setAvailable] = useState<boolean | null>(null);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { void api<{ available: boolean }>("/admin/backup/status").then((value) => setAvailable(value.available)).catch((e) => setError(e.message)); }, []);
+  async function backup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); const form = event.currentTarget; setBusy(true); setError("");
+    try {
+      const response = await fetch("/api/admin/backup/export", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+      if (!response.ok) { const result = await response.json(); throw new Error(result.error); }
+      const url = URL.createObjectURL(await response.blob()); const link = document.createElement("a"); link.href = url; link.download = "royal-backup.rvh"; link.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000); form.reset();
+    } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  }
+  async function restore(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); const form = event.currentTarget; const data = new FormData(form); const file = data.get("file");
+    if (!(file instanceof File) || !file.size) { setError("Choose a backup file."); return; }
+    if (file.size > 60 * 1024 * 1024 + 64) { setError("The backup exceeds the size limit."); return; }
+    if (!window.confirm(t("Restore this backup? Current data will be replaced and everyone will be signed out."))) return;
+    setBusy(true); setError("");
+    try {
+      const encoded = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onerror = () => reject(new Error("Could not read the backup file.")); reader.onload = () => resolve(String(reader.result).split(",")[1]); reader.readAsDataURL(file); });
+      await api("/admin/backup/restore", { method: "POST", body: JSON.stringify({ password: data.get("password"), backup: encoded }) });
+      onRestore();
+    } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  }
+  return <><div className="admin-page-heading"><div><h1>{t("Backup & restore")}</h1><p>{t("Download an encrypted backup of accounts, bookings, website content and uploaded images.")}</p></div></div>
+    {error && <p className="admin-error" role="alert">{t(error)}</p>}
+    {available === false ? <p>{t("Configure ROYAL_BACKUP_KEY on the server to use backups.")}</p> : available === null ? <p>{t("Loading…")}</p> : <div className="admin-overview-grid">
+      <section className="admin-panel"><h2>{t("Download backup")}</h2><p>{t("Keep the backup file and server keys in a safe place. The media library is limited to 40 MB per backup.")}</p><form className="admin-account-form" onSubmit={(event) => void backup(event)}><label>{t("Current password")}<input name="password" type="password" required autoComplete="current-password" /></label><button className="button" disabled={busy}>{t("Download backup")}</button></form></section>
+      <section className="admin-panel"><h2>{t("Restore backup")}</h2><p>{t("Restoring replaces current data and signs everyone out. Use the original backup server key.")}</p><form className="admin-account-form" onSubmit={(event) => void restore(event)}><label>{t("Backup file")}<input type="file" name="file" accept=".rvh" required /></label><label>{t("Current password")}<input name="password" type="password" required autoComplete="current-password" /></label><button className="outline-button" disabled={busy}>{t("Restore backup")}</button></form></section>
+    </div>}
+  </>;
+}
+
 function MediaLibrary({ content }: { content: SiteContent }) {
   const { t, language } = useStaff();
   const [images, setImages] = useState<{ filename: string; src: string; created_at: string }[]>([]);
@@ -1533,6 +1572,29 @@ function ContentEditor({
                 <button type="button" className="outline-button" onClick={() => change((next) => {
                   next.gallery.push({ id: crypto.randomUUID(), category: "memories", image: "", title: "", description: "" });
                 })}><Plus size={16} /> {t("Add photo")}</button>
+              </div>
+            ) : section === "customSections" ? (
+              <div className="admin-editor-fields staff-setting-groups">
+                <p>{t("Add text and optional photos to a page. Choose where each section appears; move, hide or remove it at any time.")}</p>
+                {draft.customSections.map((item, index) => {
+                  const pages = ["/", "/about", "/team", "/packages", "/contact", "/facilities", "/services", "/gallery"];
+                  const group = pageSections[pages.indexOf(item.page)];
+                  return <section className="admin-repeat-item" key={item.id}>
+                    <div className="admin-repeat-heading"><strong>{item.title || t("New section")}</strong><div>
+                      <button type="button" className="outline-button" disabled={index === 0} onClick={() => change((next) => { [next.customSections[index - 1], next.customSections[index]] = [next.customSections[index], next.customSections[index - 1]]; })} aria-label={t("Move up")}>↑</button>{" "}
+                      <button type="button" className="outline-button" disabled={index === draft.customSections.length - 1} onClick={() => change((next) => { [next.customSections[index + 1], next.customSections[index]] = [next.customSections[index], next.customSections[index + 1]]; })} aria-label={t("Move down")}>↓</button>{" "}
+                      <button type="button" className="outline-button" onClick={() => { if (window.confirm(t("Remove this section?"))) change((next) => { next.customSections.splice(index, 1); }); }}><Trash2 size={16} />{t("Remove")}</button>
+                    </div></div>
+                    <label>{t("Page")}<select value={item.page} onChange={(event) => change((next) => { next.customSections[index].page = event.target.value; next.customSections[index].after = "start"; })}>{pages.map((page, i) => <option value={page} key={page}>{t(pageSections[i].page)}</option>)}</select></label>
+                    <label>{t("Position")}<select value={item.after} onChange={(event) => change((next) => { next.customSections[index].after = event.target.value; })}><option value="start">{t("At the beginning")}</option>{group.sections.map(([key, label]) => <option key={key} value={key}>{t("After")} {t(label)}</option>)}</select></label>
+                    <label className="admin-section-toggle"><span>{t("Show section")}</span><input type="checkbox" checked={item.visible} onChange={(event) => change((next) => { next.customSections[index].visible = event.target.checked; })} /></label>
+                    <BilingualField label="Section title" value={item.title} required maxLength={150} onChange={(value) => change((next) => { next.customSections[index].title = value; })} />
+                    <BilingualField label="Section text" value={item.body} long maxLength={3000} onChange={(value) => change((next) => { next.customSections[index].body = value; })} />
+                    <ImageField label="Optional photo" value={item.image} onChange={(value) => change((next) => { next.customSections[index].image = value; })} />
+                    {item.image && <button type="button" className="text-link" onClick={() => change((next) => { next.customSections[index].image = ""; })}>{t("Remove photo")}</button>}
+                  </section>;
+                })}
+                <button type="button" className="outline-button" onClick={() => change((next) => { next.customSections.push({ id: crypto.randomUUID(), page: "/", after: "start", title: "", body: "", image: "", visible: true }); })}><Plus size={16} />{t("Add section")}</button>
               </div>
             ) : section === "sectionOrder" ? (
               <div className="admin-editor-fields staff-setting-groups admin-section-settings">

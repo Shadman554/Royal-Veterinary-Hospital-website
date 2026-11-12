@@ -3,6 +3,26 @@ import { chmodSync, closeSync, mkdirSync, openSync } from "node:fs";
 import path from "node:path";
 import pg from "pg";
 
+const backupTables = {
+  admins: ["id", "email", "password", "role"],
+  content: ["id", "json", "version"],
+  content_history: ["version", "json", "saved_at", "actor"],
+  appointments: ["id", "request_key", "data", "status", "staff_note", "confirmed_date", "confirmed_time", "version", "created_at", "updated_at"],
+  activity: ["id", "action", "created_at"],
+  media: ["filename", "mime_type", "bytes", "created_at"],
+};
+const backupLimit = 40 * 1024 * 1024;
+const encodeBackupRows = (table, rows) => table === "media" ? rows.map((row) => ({ ...row, bytes: Buffer.from(row.bytes).toString("base64") })) : rows;
+const backupValues = (table, columns, row) => columns.map((column) => table === "media" && column === "bytes" ? Buffer.from(row[column], "base64") : row[column]);
+function validateBackup(snapshot) {
+  if (!snapshot || snapshot.format !== 1 || !snapshot.tables || typeof snapshot.tables !== "object") throw new Error("Invalid backup format.");
+  for (const [table, columns] of Object.entries(backupTables)) {
+    const rows = snapshot.tables[table];
+    if (!Array.isArray(rows) || rows.length > 100000 || rows.some((row) => !row || typeof row !== "object" || columns.some((column) => !Object.hasOwn(row, column)))) throw new Error("Invalid backup data.");
+  }
+  if (snapshot.tables.content.length !== 1 || !snapshot.tables.admins.some((row) => row.role === "admin")) throw new Error("Backup needs website content and an administrator.");
+}
+
 if (pg?.types?.setTypeParser) {
   pg.types.setTypeParser(20, (val) => Number(val));
 }
@@ -130,6 +150,31 @@ export function createDatabaseAdapter({ databaseUrl, databasePath = ".local/roya
       async close() {
         await pool.end();
       },
+      async exportBackup() {
+        await ensureInit(); const client = await pool.connect();
+        try {
+          await client.query("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY");
+          const size = await client.query("SELECT COALESCE(SUM(length(bytes)),0) AS total FROM media");
+          if (Number(size.rows[0].total) > backupLimit) throw new Error("The media library exceeds the backup size limit.");
+          const tables = {};
+          for (const [table, columns] of Object.entries(backupTables)) tables[table] = encodeBackupRows(table, (await client.query(`SELECT ${columns.join(",")} FROM ${table}`)).rows);
+          await client.query("COMMIT"); return { format: 1, tables };
+        } catch (error) { await client.query("ROLLBACK"); throw error; } finally { client.release(); }
+      },
+      async restoreBackup(snapshot) {
+        validateBackup(snapshot); await ensureInit(); const client = await pool.connect();
+        try {
+          await client.query("BEGIN");
+          await client.query(`LOCK TABLE ${[...Object.keys(backupTables), "sessions", "rate_limits"].join(",")} IN ACCESS EXCLUSIVE MODE`);
+          for (const table of [...Object.keys(backupTables), "sessions", "rate_limits"]) await client.query(`DELETE FROM ${table}`);
+          for (const [table, columns] of Object.entries(backupTables)) {
+            const placeholders = columns.map((_, index) => `$${index + 1}`).join(",");
+            for (const row of snapshot.tables[table]) await client.query(`INSERT INTO ${table} (${columns.join(",")}) VALUES (${placeholders})`, backupValues(table, columns, row));
+          }
+          await client.query("SELECT setval(pg_get_serial_sequence('activity','id'), COALESCE((SELECT MAX(id) FROM activity),0)+1, false)");
+          await client.query("COMMIT");
+        } catch (error) { await client.query("ROLLBACK"); throw error; } finally { client.release(); }
+      },
     };
   }
 
@@ -181,6 +226,26 @@ export function createDatabaseAdapter({ databaseUrl, databasePath = ".local/roya
     },
     close() {
       sqlite.close();
+    },
+    exportBackup() {
+      sqlite.exec("BEGIN");
+      try {
+        if (sqlite.prepare("SELECT COALESCE(SUM(length(bytes)),0) AS total FROM media").get().total > backupLimit) throw new Error("The media library exceeds the backup size limit.");
+        const tables = {};
+        for (const [table, columns] of Object.entries(backupTables)) tables[table] = encodeBackupRows(table, sqlite.prepare(`SELECT ${columns.join(",")} FROM ${table}`).all());
+        sqlite.exec("COMMIT"); return { format: 1, tables };
+      } catch (error) { sqlite.exec("ROLLBACK"); throw error; }
+    },
+    restoreBackup(snapshot) {
+      validateBackup(snapshot); sqlite.exec("BEGIN IMMEDIATE");
+      try {
+        for (const table of [...Object.keys(backupTables), "sessions", "rate_limits"]) sqlite.exec(`DELETE FROM ${table}`);
+        for (const [table, columns] of Object.entries(backupTables)) {
+          const stmt = sqlite.prepare(`INSERT INTO ${table} (${columns.join(",")}) VALUES (${columns.map(() => "?").join(",")})`);
+          for (const row of snapshot.tables[table]) stmt.run(...backupValues(table, columns, row));
+        }
+        sqlite.exec("COMMIT");
+      } catch (error) { sqlite.exec("ROLLBACK"); throw error; }
     },
   };
 }

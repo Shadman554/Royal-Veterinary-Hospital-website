@@ -6,12 +6,16 @@ import {
   scryptSync,
   timingSafeEqual,
   createHash,
+  createCipheriv,
+  createDecipheriv,
 } from "node:crypto";
 import {
   existsSync,
   readFileSync,
   writeFileSync,
   unlinkSync,
+  readdirSync,
+  lstatSync,
 } from "node:fs";
 import path from "node:path";
 import { gzip } from "node:zlib";
@@ -76,6 +80,7 @@ export function createRoyalApi({
   assetsRoot = path.resolve("../royal-veterinary-hospital/public"),
 } = {}) {
   const db = createDatabaseAdapter({ databaseUrl, databasePath });
+  const backupKey = /^[a-f\d]{64}$/i.test(process.env.ROYAL_BACKUP_KEY || "") ? Buffer.from(process.env.ROYAL_BACKUP_KEY, "hex") : null;
   db.prepare(
     db.type === "postgres"
       ? "INSERT INTO content (id,json) VALUES (1,?) ON CONFLICT (id) DO NOTHING"
@@ -132,6 +137,7 @@ export function createRoyalApi({
       sectionOrder: { ...catalog.sectionOrder, ...saved.sectionOrder },
       copy: { ...catalog.copy, ...saved.copy },
       media: { ...catalog.media, ...saved.media },
+      customSections: Array.isArray(saved.customSections) ? saved.customSections : [],
       version: row?.version || 1,
     };
   };
@@ -154,8 +160,9 @@ export function createRoyalApi({
   });
   const parseStandard = express.json({ limit: "150kb" });
   const parseTranslations = express.json({ limit: "1mb" });
+  const parseBackup = express.json({ limit: "90mb" });
   api.use((req, res, next) =>
-    (req.path.startsWith("/admin/content/") ? parseTranslations : parseStandard)(
+    (req.path === "/admin/backup/restore" ? parseBackup : req.path.startsWith("/admin/content/") ? parseTranslations : parseStandard)(
       req,
       res,
       next,
@@ -536,6 +543,53 @@ export function createRoyalApi({
     const rows = await db.prepare("SELECT * FROM activity ORDER BY id DESC LIMIT 100").all();
     res.json(rows);
   });
+  api.get("/admin/backup/status", authenticate, requireAdmin, (_req, res) => res.json({ available: Boolean(backupKey) }));
+  api.post("/admin/backup/export", authenticate, requireAdmin, async (req, res) => {
+    await limit(`backup:${req.admin.id}`, 10, 60 * 60 * 1000);
+    const admin = await db.prepare("SELECT password FROM admins WHERE id=?").get(req.admin.id);
+    if (!verifyPassword(str(req.body.password, "Password", 128), admin.password)) fail("Current password is incorrect.", 403);
+    if (!backupKey) fail("Configure ROYAL_BACKUP_KEY on the server.", 503);
+    const snapshot = await db.exportBackup();
+    const existing = new Set(snapshot.tables.media.map((row) => row.filename));
+    let mediaSize = snapshot.tables.media.reduce((total, row) => total + Buffer.byteLength(row.bytes, "base64"), 0);
+    if (existsSync(mediaDirectory)) for (const filename of readdirSync(mediaDirectory)) {
+      if (!/^[a-f0-9-]+\.(png|jpg|webp|gif)$/.test(filename) || existing.has(filename)) continue;
+      const filenamePath = path.join(mediaDirectory, filename), info = lstatSync(filenamePath);
+      if (!info.isFile()) continue;
+      mediaSize += info.size;
+      if (mediaSize > 40 * 1024 * 1024) fail("The media library exceeds the backup size limit.", 413);
+      const extension = filename.split(".").pop();
+      snapshot.tables.media.push({ filename, mime_type: { png: "image/png", jpg: "image/jpeg", webp: "image/webp", gif: "image/gif" }[extension], bytes: readFileSync(filenamePath).toString("base64"), created_at: info.mtime.toISOString() });
+    }
+    const plain = Buffer.from(JSON.stringify(snapshot));
+    if (plain.length > 60 * 1024 * 1024) fail("The backup exceeds the size limit.", 413);
+    const iv = randomBytes(12), cipher = createCipheriv("aes-256-gcm", backupKey, iv);
+    const encrypted = Buffer.concat([cipher.update(plain), cipher.final()]);
+    await audit(`Encrypted backup downloaded: ${req.admin.email}`);
+    res.set({ "Content-Type": "application/octet-stream", "Content-Disposition": 'attachment; filename="royal-backup.rvh"' });
+    res.send(Buffer.concat([Buffer.from("RVHB1"), iv, cipher.getAuthTag(), encrypted]));
+  });
+  api.post("/admin/backup/restore", authenticate, requireAdmin, async (req, res) => {
+    await limit(`backup-restore:${req.admin.id}`, 5, 60 * 60 * 1000);
+    const admin = await db.prepare("SELECT password FROM admins WHERE id=?").get(req.admin.id);
+    if (!verifyPassword(str(req.body.password, "Password", 128), admin.password)) fail("Current password is incorrect.", 403);
+    if (!backupKey) fail("Configure ROYAL_BACKUP_KEY on the server.", 503);
+    const encoded = str(req.body.backup, "Backup", 85 * 1024 * 1024);
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(encoded)) fail("Invalid backup file.");
+    const bytes = Buffer.from(encoded, "base64");
+    if (bytes.length < 34 || bytes.subarray(0, 5).toString() !== "RVHB1") fail("Invalid backup file.");
+    let snapshot;
+    try {
+      const decipher = createDecipheriv("aes-256-gcm", backupKey, bytes.subarray(5, 17));
+      decipher.setAuthTag(bytes.subarray(17, 33));
+      snapshot = JSON.parse(Buffer.concat([decipher.update(bytes.subarray(33)), decipher.final()]).toString("utf8"));
+    } catch { fail("Backup cannot be opened with this server key."); }
+    await db.restoreBackup(snapshot);
+    compressedContent = undefined;
+    res.clearCookie("royal_session", { httpOnly: true, sameSite: "strict", secure, path: "/api" });
+    await audit("Database restored from encrypted backup");
+    res.json({ ok: true });
+  });
   api.get("/admin/staff", authenticate, requireAdmin, async (_req, res) => {
     res.json(await db.prepare("SELECT id,email,role FROM admins ORDER BY email").all());
   });
@@ -595,6 +649,7 @@ export function createRoyalApi({
         "sectionOrder",
         "homepageServices",
         "gallery",
+        "customSections",
         "services",
         "plans",
         "team",
@@ -607,7 +662,18 @@ export function createRoyalApi({
     )
       fail("Unknown content section.", 404);
     let clean;
-    if (section === "gallery") {
+    if (section === "customSections") {
+      const pages = { "/": "home", "/about": "about", "/team": "team", "/packages": "plans", "/contact": "contact", "/facilities": "facilities", "/services": "services", "/gallery": "gallery" };
+      if (!Array.isArray(value) || value.length > 80) fail("Use at most 80 custom sections.");
+      clean = value.map((item) => {
+        const id = str(item?.id, "Section ID", 36);
+        if (!/^[a-f0-9-]{36}$/i.test(id) || !Object.hasOwn(pages, item?.page)) fail("Invalid custom section.");
+        if (item.after !== "start" && (typeof item.after !== "string" || !item.after.startsWith(pages[item.page]) || !Object.hasOwn(catalog.sectionOrder, item.after))) fail("Choose a valid section position.");
+        if (typeof item.visible !== "boolean") fail("Invalid section visibility.");
+        return { id, page: item.page, after: item.after, title: str(item.title, "Section title", 150), body: str(item.body, "Section text", 3000, true), image: item.image ? imagePath(item.image) : "", visible: item.visible };
+      });
+      if (new Set(clean.map((item) => item.id)).size !== clean.length) fail("Sections must be unique.");
+    } else if (section === "gallery") {
       if (!Array.isArray(value) || value.length > 100) fail("Use at most 100 gallery items.");
       clean = value.map((item) => {
         const id = str(item?.id, "Gallery ID", 36);

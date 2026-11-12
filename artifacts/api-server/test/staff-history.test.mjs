@@ -18,6 +18,11 @@ test("staff access is restricted and content history restores safely", async () 
     const setup = await request("/admin/setup", "POST", { setupKey: "test-only-bootstrap-key", email: "admin@example.test", password: "Strong-admin-password" });
     assert.equal(setup.response.status, 200);
     const admin = setup.response.headers.get("set-cookie").split(";")[0];
+    // Old installations may still have two-factor records; they must not block sign-in.
+    runtime.db.exec("CREATE TABLE admin_security (admin_id TEXT PRIMARY KEY, secret TEXT NOT NULL, enabled INTEGER NOT NULL, last_counter INTEGER NOT NULL)");
+    const existingAdmin = await runtime.db.prepare("SELECT id FROM admins WHERE email=?").get("admin@example.test");
+    await runtime.db.prepare("INSERT INTO admin_security VALUES (?,?,?,?)").run(existingAdmin.id, "old-encrypted-secret", 1, -1);
+    assert.equal((await request("/admin/login", "POST", { email: "admin@example.test", password: "Strong-admin-password" })).response.status, 200);
     const created = await request("/admin/staff", "POST", { email: "staff@example.test", password: "Strong-staff-password" }, admin);
     assert.equal(created.response.status, 201);
     const login = await request("/admin/login", "POST", { email: "staff@example.test", password: "Strong-staff-password" });
@@ -27,10 +32,14 @@ test("staff access is restricted and content history restores safely", async () 
     for (const url of ["/admin/staff", "/admin/history", "/admin/activity", "/admin/media"]) assert.equal((await request(url, "GET", undefined, staff)).response.status, 403);
     assert.equal((await request("/admin/content/settings", "PUT", {}, staff)).response.status, 403);
     const before = (await request("/content")).data;
-    const saved = await request("/admin/content/settings", "PUT", { version: before.version, value: { ...before.settings, city: "New city" } }, admin);
+    const custom = [{ id: "12345678-1234-1234-1234-123456789abc", page: "/about", after: "aboutStory", title: "Our equipment", body: "Care for every patient.", image: "", visible: true }];
+    assert.equal((await request("/admin/content/customSections", "PUT", { version: before.version, value: [{ ...custom[0], after: "homeHero" }] }, admin)).response.status, 400);
+    const added = await request("/admin/content/customSections", "PUT", { version: before.version, value: custom }, admin);
+    assert.equal(added.response.status, 200); assert.equal(added.data.customSections[0].title, "Our equipment");
+    const saved = await request("/admin/content/settings", "PUT", { version: added.data.version, value: { ...before.settings, city: "New city" } }, admin);
     assert.equal(saved.response.status, 200);
     const history = await request("/admin/history", "GET", undefined, admin);
-    assert.equal(history.data[0].version, before.version);
+    assert.equal(history.data[0].version, added.data.version);
     assert.equal((await request(`/admin/history/${before.version}/restore`, "POST", { version: before.version }, admin)).response.status, 409);
     const restored = await request(`/admin/history/${before.version}/restore`, "POST", { version: saved.data.version }, admin);
     assert.equal(restored.data.settings.city, before.settings.city);

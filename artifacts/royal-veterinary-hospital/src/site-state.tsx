@@ -23,6 +23,7 @@ export const initialContent = {
   sectionOrder: defaultSectionOrder,
   homepageServices: defaultFeaturedServices,
   gallery: [] as { id: string; category: "memories" | "facilities"; image: string; title: string; description: string }[],
+  customSections: [] as { id: string; page: string; after: string; title: string; body: string; image: string; visible: boolean }[],
   copy: copyDefaults as Record<string, string>,
   media: mediaDefaults as Record<
     string,
@@ -88,12 +89,13 @@ function normalizeContent(data: SiteContent): SiteContent {
   // Previous reference crops are defaults from an earlier homepage design.
   if (media.heroDesktop?.src === "/rvh/assets/reference-welcome.jpg") media.heroDesktop = initialContent.media.heroDesktop;
   if (media.heroMobile?.src === "/rvh/assets/reference-companions.jpg") media.heroMobile = initialContent.media.heroMobile;
-  return { ...data, settings, sections: { ...defaultSections, ...data.sections }, sectionOrder: { ...defaultSectionOrder, ...data.sectionOrder }, homepageServices: data.homepageServices ?? defaultFeaturedServices, gallery: data.gallery ?? [], media, copy: { ...initialContent.copy, ...data.copy } };
+  return { ...data, settings, sections: { ...defaultSections, ...data.sections }, sectionOrder: { ...defaultSectionOrder, ...data.sectionOrder }, homepageServices: data.homepageServices ?? defaultFeaturedServices, gallery: data.gallery ?? [], customSections: data.customSections ?? [], media, copy: { ...initialContent.copy, ...data.copy } };
 }
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState(initialContent);
   const [online, setOnline] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const update = (data: SiteContent) => setContent(normalizeContent(data));
   const refresh = async () => {
     try {
@@ -105,7 +107,8 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     }
   };
   useEffect(() => {
-    const showPreview = new URLSearchParams(window.location.search).get("preview") === "1";
+    const params = new URLSearchParams(window.location.search);
+    const showPreview = params.get("preview") === "1" || params.get("previewFrame") === "1";
     if (showPreview) {
       void (async () => {
         try {
@@ -128,9 +131,17 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     window.addEventListener("focus", reload);
     return () => window.removeEventListener("focus", reload);
   }, []);
+  const previewContainer = preview && new URLSearchParams(window.location.search).get("preview") === "1";
+  if (previewContainer) return <div style={{ minHeight: "100vh", background: "#e7eee5", display: "flex", flexDirection: "column" }}>
+    <header style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "0.75rem", padding: "0.75rem", background: "#173d2c", color: "white" }}>
+      <strong>Preview · پێشبینین</strong><span>Unpublished changes · گۆڕانکاریی پاشەکەوت نەکراو</span>
+      <button type="button" aria-pressed={previewDevice === "desktop"} onClick={() => setPreviewDevice("desktop")} style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>Desktop · کۆمپیوتەر</button>
+      <button type="button" aria-pressed={previewDevice === "mobile"} onClick={() => setPreviewDevice("mobile")} style={{ padding: "0.5rem 1rem", cursor: "pointer" }}>Mobile · مۆبایل</button>
+    </header>
+    <div style={{ flex: 1, display: "flex", justifyContent: "center", overflow: "auto", padding: "1rem" }}><iframe title="Website preview" src="/?previewFrame=1" style={{ display: "block", width: previewDevice === "mobile" ? "390px" : "100%", maxWidth: "100%", minHeight: "80vh", border: "1px solid #b8cbb5", background: "white" }} /></div>
+  </div>;
   return (
     <SiteContext.Provider value={{ content, online, refresh, update }}>
-      {preview && <div role="status" style={{ background: "#173d2c", color: "white", textAlign: "center", padding: "0.65rem", fontSize: "0.9rem" }}>Preview · پێشبینین — Unpublished changes · گۆڕانکاریی پاشەکەوت نەکراو</div>}
       {children}
     </SiteContext.Provider>
   );
@@ -152,6 +163,7 @@ export function useHospital() {
             team: localize(content.team, content.copy),
             faqs: localize(content.faqs, content.copy),
             gallery: localize(content.gallery, content.copy),
+            customSections: localize(content.customSections, content.copy),
             categories: localize(content.categories, content.copy),
             categorySteps: localize(content.categorySteps, content.copy),
           }
